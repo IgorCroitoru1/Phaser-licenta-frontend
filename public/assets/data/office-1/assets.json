@@ -1,0 +1,94 @@
+[
+    {
+     "path": "assets/maps",
+     "files": [
+        {
+            "type": "tilemapTiledJSON",
+            "key": "office-1",
+            "url": "office-1-map.json"
+        }
+     ]
+    },
+    {
+        "path": "assets/images/common",
+        "files": [
+            {
+                "type": "image",
+                "key": "collision",
+                "url": "collision.png"
+              }
+        ]
+    },
+    {
+      "path": "assets/images/furniture",
+      "files": [
+        {
+          "type": "image",
+          "key": "glass-wooden-wall",
+          "url": "glass-wooden-wall.png"
+        },
+      
+        {
+          "type": "image",
+          "key": "wall",
+          "url": "wall.png"
+        },
+        {
+          "type": "image",
+          "key": "wood-door-right",
+          "url": "wood-door-right.png"
+        },
+        {
+          "type": "image",
+          "key": "wood-door-left",
+          "url": "wood-door-left.png"
+        },
+        {
+          "type": "image",
+          "key": "wood-floor",
+          "url": "wood-floor.jpg"
+        },
+        {
+          "type": "image",
+          "key": "flowers",
+          "url": "flowers.png"
+        },
+        {
+          "type": "image",
+          "key": "grass",
+          "url": "grass.png"
+        },
+        {
+          "type": "image",
+          "key": "window",
+          "url": "window.png"
+        },
+        {
+          "type": "image",
+          "key": "green-carpet",
+          "url": "green-carpet.png"
+        },
+        {
+          "type": "image",
+          "key": "wall-side-part",
+          "url": "wall-side-part.jpg"
+        },
+        {
+          "type": "image",
+          "key": "top-door-wall",
+          "url": "top-door-wall.png"
+        },
+        {
+          "type": "image",
+          "key": "door-vertical-object",
+          "url": "door-vertical.png"
+        },
+        {
+          "type": "image",
+          "key": "wood-door-right-object",
+          "url": "wood-door-right.png"
+        }
+      ]
+    }
+  ]
+  

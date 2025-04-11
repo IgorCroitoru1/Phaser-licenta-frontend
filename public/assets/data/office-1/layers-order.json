@@ -1,0 +1,10 @@
+{
+    "order": [
+      "background",
+      "foreground",
+      "zones",
+      "zones/1/door",
+      "zones/door-foreground",
+      "collides"
+    ]
+}
