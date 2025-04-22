@@ -8,38 +8,7 @@ import { ChannelManager } from './components/ChannelManager';
 import { ServerSidebar } from './components/server/server-sidebar';
 function App()
 {
-    // The sprite can only be moved in the MainMenu Scene
-
-    //  References to the PhaserGame component (game and scene are exposed)
-    const phaserRef = useRef<IRefPhaserGame | null>(null);
-    const changeScene = () => {
-
-        if(phaserRef.current)
-        {     
-            const scene = phaserRef.current.scene as MainMenu;
-            
-            if (scene)
-            {
-                //scene.changeScene();
-            }
-        }
-    }
-    useEffect(() => {
-        
-        // EventBus.on(GameConfig.eventBusPlayerMoved, ({x,y,zoom}: {x: number, y: number, zoom: number}) => {
-        //     setSpritePosition({ x, y, zoom });
-        // });
-    }, []);
     
-
-   
-
-    // Event emitted from the PhaserGame component
-    const currentScene = (scene: Phaser.Scene) => {
-
-       // setCanMoveSprite(scene.scene.key !== 'TestScene');
-        
-    }
 
     return (
         <div id="app" className="flex h-screen" >

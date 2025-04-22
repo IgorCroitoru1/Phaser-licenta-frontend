@@ -1,0 +1,4 @@
+// src/config/livekit.ts
+export const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL!;
+export const LIVEKIT_TOKEN_API = process.env.NEXT_PUBLIC_LIVEKIT_PUBLIC_API!;
+export const TEMP_TOKEN="eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiQWxpY2VcbiIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoibXktcm9vbSIsImNhblB1Ymxpc2giOnRydWUsImNhblN1YnNjcmliZSI6dHJ1ZX0sImlzcyI6ImFwaV9rZXkiLCJleHAiOjE3NDUyOTY1NjUsIm5iZiI6MCwic3ViIjoidXNlcjEyMyJ9.hz1Pf_biEaaLKynplpDita-Ww3RhV3-5Es4tNkBX8pk"

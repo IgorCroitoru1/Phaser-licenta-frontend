@@ -2,6 +2,8 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
+import { LiveKitProvider, MyVideoConference } from "@/components/LiveKit";
+import { DeviceSelectionProvider } from "@/context/DeviceSelectionContext";
 // import { MediaStreamProvider, useMediaStream } from "@/context/MediaStreamContext";
 // import { DeviceSelectionProvider, useDeviceSelection } from "@/context/DeviceSelectionContext";
 
@@ -16,7 +18,14 @@ function AppContent({ Component, pageProps }: AppProps) {
     //     }
     // }, [cameraId, microphoneId, router]);
 
-    return <Component {...pageProps} />;
+    return (
+        <>
+         <Component {...pageProps} />
+        </>
+       
+       
+    );
+   
 }
 
 // export default function App(props: AppProps) {
@@ -30,6 +39,11 @@ function AppContent({ Component, pageProps }: AppProps) {
 // }
 export default function App(props: AppProps) {
     return (
-            <AppContent {...props} />
+        <DeviceSelectionProvider>
+            <LiveKitProvider>
+                <AppContent {...props} />
+            </LiveKitProvider>
+        </DeviceSelectionProvider>
+
     );
 }

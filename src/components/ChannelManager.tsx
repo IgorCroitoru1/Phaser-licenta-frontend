@@ -16,10 +16,11 @@ import { Position } from "@/game/common/types";
 import { ColyseusEventPayloads } from "@/utils/colyseus-events";
 import toast from "react-hot-toast";
 import throttle from "lodash.throttle";
+import { use } from "matter";
 // const sceneRegistry = new Map<string, typeof Phaser.Scene>();
 // sceneRegistry.set("TestScene", TestScene);
 // sceneRegistry.set("MainMenu", MainMenu);
-// sceneRegistry.set("MyScene", MyScene);
+// sceneRegistry.set("MyScene", MyScene)ș
 export class Player extends Schema {
     @type("string") id: string ;
     @type("number") x: number ;
@@ -49,6 +50,7 @@ export const ChannelManager = () => {
     const addPlayer = useGameStore((state) => state.addPlayer);
     const updatePlayer = useGameStore((state) => state.updatePlayer);
     const removePlayer = useGameStore((state) => state.removePlayer);
+    const isGameLoaded = useGameStore((state) => state.gameLoaded);
     const { room, isConnected, joinRoom, leaveRoom } = useColyseus();
     const setSwitchScene = useGameStore((state) => state.setSwitchScene);
     const switchScene = useCallback(async (newMapName: string, newRoomName: string): Promise<boolean> => {
@@ -57,32 +59,37 @@ export const ChannelManager = () => {
         const game = phaserRef.current?.game;
         if (!game) return false;
     
-        // Create new AbortController for this scene switch
         const abortController = new AbortController();
-        //console.log("Leaving room")
-        await leaveRoom()
-           
     
-        phaserRef.current?.scene?.scene?.remove();
-        phaserRef.current?.game?.scene.add('MyScene', new MyScene())
+        await leaveRoom();
     
-        return new Promise(async (resolve) => {
-            // Reject if aborted
-            abortController.signal.addEventListener('abort', () => {
-                resolve(false);
+        // Remove existing scene safely
+        const currentSceneKey = 'MyScene';
+        const existingScene = game.scene.getScene(currentSceneKey);
+        console.log(existingScene)
+        if (existingScene) {
+            game.scene.stop(currentSceneKey);
+            game.scene.remove(currentSceneKey);
+            console.log("Scene stopped and removed");
+        }
+    
+        // Add and start new scene
+        const myScene = new MyScene(); // You might want to pass config her
+        game.scene.add(currentSceneKey, myScene, true, { cfg: {name: newMapName} });
+        //game.scene.start(currentSceneKey, { cfg: {name: newMapName} });
+        console.log("Scene added and started");
+    
+        try {
+            await joinRoom(newRoomName, {
+                mapId: newMapName,
+                token: GameConfig.TEMP_TOKEN,
             });
+        } catch (error) {
+            console.error("Failed to join room:", error);
+            return false;
+        }
     
-            phaserRef.current?.game?.scene.start('MyScene', { cfg: {name: newMapName} });
-            
-            try {
-                await joinRoom(newRoomName, {mapId: newMapName, token: GameConfig.TEMP_TOKEN});
-            } catch (error) {
-                if (!abortController.signal.aborted) {
-                    console.error("Failed to join room:", error);
-                }
-                return resolve(false);
-            }
-    
+        return new Promise((resolve) => {
             const unsubscribe = useGameStore.subscribe((state) => {
                 if (abortController.signal.aborted) {
                     unsubscribe();
@@ -95,33 +102,33 @@ export const ChannelManager = () => {
                 }
             });
     
-            // Cleanup on unmount or new scene switch
             return () => {
                 abortController.abort();
                 unsubscribe();
             };
         });
-    }, [phaserRef, room, joinRoom, leaveRoom]);
+    }, [phaserRef, isGameLoaded, room, joinRoom, leaveRoom]);
     
 
     useEffect(() => {
         setSwitchScene(switchScene);
     }, [switchScene]);
     useEffect(() => {
-        if (!sceneLoaded) return; // ✅ Wait for scene to load
-       // if (!isConnected) joinRoom("game_room"); // ✅ Ensure room is joined only if not connected
+       console.log("Switch scene recreatedd")
 
-    }, [sceneLoaded, isConnected]); // ✅ Dependencies ensure it runs correctly
+    }, [phaserRef, isGameLoaded , room, joinRoom, leaveRoom]); // ✅ Dependencies ensure it runs correctly
 
     useEffect(() => {
         const scene = phaserRef.current?.scene as MyScene;
-        if (!scene || !room) return;
+        if (!scene || !room || !scene.sys || !scene.sys.isActive()) {
+            console.warn("Scene is not ready or destroyed");
+            return;
+        }
 
         console.log("Scene loaded:", sceneLoaded);
 
         const $ = getStateCallbacks(room);
 
-        // ✅ Handle new players
         $(room.state).players.onAdd((player, id) => {
             $(player).onChange(() => {
                 updatePlayer(id, player.x, player.y);
@@ -133,7 +140,6 @@ export const ChannelManager = () => {
 
         });
 
-        // ✅ Handle player disconnections
         $(room.state).players.onRemove((_, id) => {
             console.log("Player left:", id);
             removePlayer(id);
@@ -165,7 +171,6 @@ export const ChannelManager = () => {
             sendRoomEvent(room, GameEvents.CURRENT_ZONE, { zoneId: payload.zoneId });
         }, 100);
         
-        // Inside useEffect
         const throttledSendPlayerMove = createThrottledSendPlayerMove(room);
         const throttledSendZoneChange = createThrottledZoneChange(room);
         
@@ -176,24 +181,35 @@ export const ChannelManager = () => {
         const onDoorTrigger = (payload: ColyseusEventPayloads[GameEvents.DOOR_TRIGGER]) => {
             sendRoomEvent(room, GameEvents.DOOR_TRIGGER, { doorId: payload.doorId });
         };
+
         
         const onZoneChange = (payload: ColyseusEventPayloads[GameEvents.CURRENT_ZONE]) => {
             throttledSendZoneChange(payload);
         };
         
-        // Subscribing
         scene.customEvents.on(GameEvents.PLAYER_MOVE, onPlayerMove);
         scene.customEvents.on(GameEvents.DOOR_TRIGGER, onDoorTrigger);
         scene.customEvents.on(GameEvents.CURRENT_ZONE, onZoneChange);
         return  () => {
+            //
             console.log("👋 Cleaning up GameManager...");
             scene.customEvents.off(GameEvents.PLAYER_MOVE, onPlayerMove);
             scene.customEvents.off(GameEvents.DOOR_TRIGGER, onDoorTrigger);
             scene.customEvents.off(GameEvents.CURRENT_ZONE, onZoneChange);
-            //leaveRoom(); // ✅ Disconnect on unmount
         };
+        
     }, [sceneLoaded, room]);
 
+        useEffect(() => {
+            return () => {
+                const isMySceneActive = phaserRef.current?.game?.scene.isActive("MyScene");
+                if(isMySceneActive) {
+                    console.log("👋 Cleaning up MySceneeeeeee");
+                    phaserRef.current?.game?.scene.stop("MyScene");
+                    phaserRef.current?.game?.scene.remove("MyScene");
+                }
+            }
+        },[])
         return (
         
             <PhaserGame ref={phaserRef}/>

@@ -11,6 +11,9 @@ import { stat } from 'fs';
 import TestScene from './scenes/TestScene';
 import { MyScene } from './scenes/MyScene';
 import { Toaster } from '@/components/ui/toaster';
+import { useTracks } from '@livekit/components-react';
+import { Track } from 'livekit-client';
+import PlayerVideo from '@/components/ui/Player2';
 
 export interface IRefPhaserGame {
     game: Phaser.Game | null;
@@ -25,6 +28,13 @@ interface IProps {
 }
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref) {
+     const tracks = useTracks(
+        [
+          { source: Track.Source.Camera, withPlaceholder: true },
+          { source: Track.Source.ScreenShare, withPlaceholder: false },
+        ],
+        { onlySubscribed: false },
+      );
     const game = useRef<Phaser.Game | null>(null);
     const setGameLoaded = useGameStore((state) => state.setGameLoaded);
     const setSceneLoaded = useGameStore((state) => state.setSceneLoaded);
@@ -48,6 +58,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
         return () => {
             if (game.current) {
                 game.current.destroy(true);
+                console.log("PhaserGame.tsx: Destroying Phaser Game");
                 game.current = null;
             }
         };
@@ -103,10 +114,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
             EventBus.off('current-scene-ready', onSceneReady);
         };
     }, [currentActiveScene, ref]);
-
+    //console.log(tracks, "cameraTracks")
     return (
-        <div ref={containerRef} id="game-container" style={{position: 'relative',  width: '100%', height: '100%', minHeight: '50px', minWidth: '50px'}}>
-            {/* <Player ref={playerRef} id="player1" cameraStream={stream} /> */}
+        <div ref={containerRef} id="game-container" style={{position: 'relative', width: '100%', height: '100%', minHeight: '50px', minWidth: '50px'}}>
+            {tracks.map((trackRef) => (
+               <PlayerVideo key={trackRef.participant.identity} trackRef={trackRef} />
+            ))}
             <Toaster />
         </div>
     );

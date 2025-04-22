@@ -3,6 +3,7 @@ import { Channel, useChannelStore } from "@/store/useChannelStore";
 import { useGameStore } from "@/store/useGameStore";
 import { on } from "events";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 
 
@@ -33,7 +34,13 @@ export function ServerChannel({
     //   onOpen(action, { channel, server });
     // };
   
-   
+    useEffect(() => {
+      return () => {
+        console.log("Unmounting channel", channel.id);
+        setActiveChannel(null);
+      }
+    }, []);
+    
     const onClick = async () => {
       if (activeChannel?.id !== channel.id) {
           const success = await switchScene(channel.mapName, channel.colyseusRoomName, channel.sceneName);

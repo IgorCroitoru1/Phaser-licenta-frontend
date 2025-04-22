@@ -57,8 +57,8 @@ export function useColyseus() {
 
     // ✅ Leave Room
     const leaveRoom = useCallback(async () => {
-        console.log("👋 Leaving room...");
-        if (room) {
+        if (room && room.connection.isOpen && !isConnecting) {
+            console.log("👋 Leaving room:", room.name);
             await room.leave();
             setIsConnected(false);
             setRoom(null);
