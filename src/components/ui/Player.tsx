@@ -1,22 +1,36 @@
 import { forwardRef, useEffect, useRef } from "react";
 import GameConfig from "../../../game-config";
+import { userRefsManager } from "@/user/UserRefsManager";
 
 interface PlayerProps {
     cameraStream: MediaStream | null;
-    id:any
+    user:any
 }
 
-const Player = forwardRef<HTMLDivElement, PlayerProps>(({ cameraStream, id }, ref) => {
+const Player = forwardRef<HTMLDivElement, PlayerProps>(({ cameraStream, user }, externalRef) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
+  const ref = externalRef ?? internalRef;
+  // const camera = useChannelStore(state => state.camera);
+  // const player = useChannelStore((state) => state.users.get(user.id));
+  const userId = user.id;
   useEffect(() => {
       if (videoRef.current && cameraStream) {
           videoRef.current.srcObject = cameraStream;
           videoRef.current.play();
       }
   }, [cameraStream]);
+   useEffect(() => {
+      if (!ref || typeof ref === 'function' || !('current' in ref) || !ref.current) return;
+      userRefsManager.register(userId, ref.current, user.x, user.y);
+  
+      return () => {
+        userRefsManager.unregister(userId);
+      };
+    }, [userId, ref]);
 
   return (
-      <div ref={ref} id= {id}
+      <div ref={ref} id= {userId}
       className="absolute rounded-2xl bg-white shadow-lg z-0 "
 
       

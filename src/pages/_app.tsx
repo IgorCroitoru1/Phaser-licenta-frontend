@@ -38,6 +38,8 @@ function AppContent({ Component, pageProps }: AppProps) {
 //     );
 // }
 export default function App(props: AppProps) {
+
+    
     return (
         <DeviceSelectionProvider>
             <LiveKitProvider>

@@ -5,15 +5,17 @@ import { EventBus } from './Events';
 import Player from '../components/ui/Player';
 import { MainMenu } from './scenes/MainMenu';
 import GameConfig from '../../game-config';
-import { useGameStore } from '@/store/useGameStore';
 import { set } from 'react-hook-form';
 import { stat } from 'fs';
 import TestScene from './scenes/TestScene';
 import { MyScene } from './scenes/MyScene';
 import { Toaster } from '@/components/ui/toaster';
-import { useTracks } from '@livekit/components-react';
+import { ParticipantTile, TrackLoop, useTracks } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import PlayerVideo from '@/components/ui/Player2';
+import { useChannelStore } from '@/store/useChannelStore';
+import User from '@/components/User';
+import { UserRenderer } from '@/components/UserRenderer';
 
 export interface IRefPhaserGame {
     game: Phaser.Game | null;
@@ -28,19 +30,15 @@ interface IProps {
 }
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref) {
-     const tracks = useTracks(
-        [
-          { source: Track.Source.Camera, withPlaceholder: true },
-          { source: Track.Source.ScreenShare, withPlaceholder: false },
-        ],
-        { onlySubscribed: false },
-      );
+     
     const game = useRef<Phaser.Game | null>(null);
-    const setGameLoaded = useGameStore((state) => state.setGameLoaded);
-    const setSceneLoaded = useGameStore((state) => state.setSceneLoaded);
-    const sceneLoaded = useGameStore((state) => state.sceneLoaded);
+    const setGameLoaded = useChannelStore((state) => state.setGameLoaded);
+    const setSceneLoaded = useChannelStore((state) => state.setSceneLoaded);
+    const sceneLoaded = useChannelStore((state) => state.sceneLoaded);
     const containerRef = useRef<HTMLDivElement>(null);
     const currentSceneRef = useRef<Phaser.Scene | null>(null);
+
+    const { users } = useChannelStore();
     useLayoutEffect(() => {
         if (game.current === null) {
             game.current = StartGame("game-container");
@@ -64,30 +62,30 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
         };
     }, [ref]);
 
-    useEffect(() => {
-        if (!containerRef.current) return;
-        // Create a ResizeObserver to watch for changes
-        const observer = new ResizeObserver((entries) => {
-            if(game.current)
-            { 
-                for (let entry of entries) {
-                if (entry.contentRect.width === 0 || entry.contentRect.height === 0) { 
-                    console.log("ResizeObserver: width or height is 0, skipping resize");
-                    return
-                };
-                if (currentSceneRef.current && currentSceneRef.current instanceof MyScene ) {
-                    currentSceneRef.current.onResize();
-                }
-            }
+    // useEffect(() => {
+    //     if (!containerRef.current) return;
+    //     // Create a ResizeObserver to watch for changes
+    //     const observer = new ResizeObserver((entries) => {
+    //         if(game.current)
+    //         { 
+    //             for (let entry of entries) {
+    //             if (entry.contentRect.width === 0 || entry.contentRect.height === 0) { 
+    //                 console.log("ResizeObserver: width or height is 0, skipping resize");
+    //                 return
+    //             };
+    //             if (currentSceneRef.current && currentSceneRef.current instanceof MyScene ) {
+    //                 currentSceneRef.current.onResize();
+    //             }
+    //         }
 
-            }
+    //         }
            
-        });
+    //     });
 
-        observer.observe(containerRef.current);
+    //     observer.observe(containerRef.current);
 
-        return () => observer.disconnect(); // Cleanup observer on unmount
-    },[]);
+    //     return () => observer.disconnect(); // Cleanup observer on unmount
+    // },[]);
 
     useEffect(() => {
         const onSceneReady = (scene_instance: Phaser.Scene) => {
@@ -117,10 +115,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
     //console.log(tracks, "cameraTracks")
     return (
         <div ref={containerRef} id="game-container" style={{position: 'relative', width: '100%', height: '100%', minHeight: '50px', minWidth: '50px'}}>
-            {tracks.map((trackRef) => (
-               <PlayerVideo key={trackRef.participant.identity} trackRef={trackRef} />
-            ))}
-            <Toaster />
+          <UserRenderer/>
+            {/* {tracks.map((trackRef) => (
+                <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef}/>
+            //    <PlayerVideo key={trackRef.participant.identity} trackRef={trackRef} />
+            ))} */}
+            {/* <Toaster /> */}
         </div>
     );
 });

@@ -1,6 +1,5 @@
 "use client";
 
-import { useGameStore } from "@/store/useGameStore";
 import { useRouter } from "next/navigation";
 
 // import { GameManager } from "../ChannelManager";
@@ -17,15 +16,16 @@ const channels: Channel[] = [
       name: "general",
       sceneName: "TestScene",
       colyseusRoomName: "game_room",
-      mapName: "office-1"
-      
+      mapName: "office-1",
+      livekitRoomName: "game_room",
     },
     {
       id: "2",
       name: "announcements",
       sceneName: "MainMenu",
       colyseusRoomName: "game_room2",
-      mapName: "office-1"
+      mapName: "office-1",
+      livekitRoomName: "game_room2",
     },
     // {
     //   id: "3",

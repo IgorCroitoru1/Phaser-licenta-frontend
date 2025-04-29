@@ -28,8 +28,10 @@ export const LEVEL_NAME = {
 export enum GameEvents  {
   PLAYER_MOVE = "move",
   PLAYER_JOINED = "player_joined",
+  LOCAL_PLAYER_MOVED = "local_player_moved",
   PLAYER_LEFT = "player_left",
   CURRENT_ZONE = "current_zone",
+  CAMERA_CHANGE = "camera_change",
   //ZONE_CHANGED = "zone_changed",
   //DOOR_OPENED = "door_open",
   ZOOM_CHANGE = "zoom_change", // Event name for zoom changes

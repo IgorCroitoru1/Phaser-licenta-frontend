@@ -12,13 +12,14 @@ export type PlayerConfig = {
   scene: Phaser.Scene;
   position: Position;
   isLocal?: boolean;
-  playerId?: string;
+  playerId?: any;
 };
 
 export class Player extends CharacterGameObject {
   private _collidingObjectsComponent: CollidingObjectsComponent;
   private _cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   private _isLocal: boolean;
+  private _id: any
   private _lerpFactor: number = 0.2;
   private _lastPosition: Position = { x: 0, y: 0 };
   constructor(config: PlayerConfig) {
@@ -27,14 +28,13 @@ export class Player extends CharacterGameObject {
       scene: config.scene,
       position: config.position,
       frame: 0,
-      id: config.playerId || 'local-player',
       isPlayer: true,
       speed: PLAYER_SPEED,
       assetKey: "",});
 
       this._isLocal = config.isLocal || false;
       this._targetPosition = { ...config.position };
-  
+      this._id = config.playerId || null
       if (this._isLocal) {
         this._cursors = config.scene.input.keyboard?.createCursorKeys();
         this.setTint(0x00ff00); // Green tint for local player
@@ -59,7 +59,9 @@ export class Player extends CharacterGameObject {
     // update physics body
     //this.physicsBody.setSize(12, 16, true).setOffset(this.width / 2 - 5, this.height / 2);
   }
-
+  get id(){
+    return this._id
+  }
   private setupPhysics(): void {
     //this.setCollideWorldBounds(true);
     //this.setSize(32, 32); // Set appropriate size for your sprite

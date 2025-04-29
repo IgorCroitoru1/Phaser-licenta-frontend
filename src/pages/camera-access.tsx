@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { set } from "react-hook-form";
-import { useChannelStore } from "@/store/useChannelStore";
+import {  useDeviceStore } from "@/store/useChannelStore";
+import { permanentRedirect } from "next/navigation";
 
 export default function CameraAccessPage() {
   const {
@@ -26,18 +26,16 @@ export default function CameraAccessPage() {
     availableMicrophones,
     setAvailableCameras,
     setAvailableMicrophones,
-    localAudioTrack,
-    localVideoTrack,
-    setLocalVideoTrack,
-    setLocalAudioTrack,
-    setDevicePermissionsGranted
-  } = useChannelStore();
+    permissionsGranted,
+    setPermissionsGranted
+  } = useDeviceStore();
 
 //   const { setStream } = useMediaStream();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const router = useRouter();
+  const [localCameraId, setLocalCameraId] = useState<string | null>(null);
+  const [localMicrophoneId, setLocalMicrophoneId] = useState<string | null>(null);
+  // const [devicesPermissionsGranted, setDevicesPermissionsGranted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // ✅ Check for existing permissions when component mounts
@@ -55,22 +53,26 @@ export default function CameraAccessPage() {
         setPermissionsGranted(true);
       }
     });
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    }
   }, []);
 
   const onAudioSelectChange = async (value: string) => {
-    setMicrophoneId(value);
-    localAudioTrack?.stop(); // Stop the previous audio track if it exists
+    setLocalMicrophoneId(value);
+    //localAudioTrack?.stop(); // Stop the previous audio track if it exists
     if (value === 'off') {
-      setLocalAudioTrack(null);
+      //setLocalAudioTrack(null);
       return;
     }
 
     try {
-      const audioTrack = await createLocalAudioTrack({
-        deviceId: { exact: value },
-      });
-
-      setLocalAudioTrack(audioTrack);
+      // const audioTrack = await createLocalAudioTrack({
+      //   deviceId: { exact: value },
+      // });
+      //setLocalAudioTrack(audioTrack);
     } catch (err: any) {
       console.error("⚠️ Could not start audio track:", err);
 
@@ -79,16 +81,16 @@ export default function CameraAccessPage() {
       }
 
       // Optional: reset to off
-      setMicrophoneId("off");
-      setLocalAudioTrack(null);
+      setLocalMicrophoneId("off");
+      //setLocalAudioTrack(null);
     }
   };
 
   const onVideoSelectChange = async (value: string) => {
-    setCameraId(value);
-    localVideoTrack?.stop(); // Stop the previous video track if it exists
+    setLocalCameraId(value);
+    //localVideoTrack?.stop(); // Stop the previous video track if it exists
     if (value === 'off') {
-      setLocalVideoTrack(null);
+      //setLocalVideoTrack(null);
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
@@ -104,7 +106,7 @@ export default function CameraAccessPage() {
         }
       });
   
-      setLocalVideoTrack(videoTrack);
+      //setLocalVideoTrack(videoTrack);
   
       if (videoRef.current) {
         const mediaStream = new MediaStream([videoTrack.mediaStreamTrack]);
@@ -119,8 +121,8 @@ export default function CameraAccessPage() {
       }
   
       // Optional: reset to off
-      setCameraId("off");
-      setLocalVideoTrack(null);
+      setLocalCameraId("off");
+      //setLocalVideoTrack(null);
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
@@ -151,37 +153,16 @@ export default function CameraAccessPage() {
   };
 
   // ✅ Function to request media access
-  const requestAccess = async () => {
-    if (!cameraId || !microphoneId) {
+  const goNext = async () => {
+    if (!localCameraId || !localMicrophoneId) {
     setError("Te rugăm să selectezi o cameră și un microfon.");
       return;
     }
 
      try {
-    //   const videoTrackPromise = cameraId !== 'off'
-    //     ? createLocalVideoTrack({ deviceId: { exact: cameraId } })
-    //     : null;
-  
-    //   const audioTrackPromise = microphoneId !== 'off'
-    //     ? createLocalAudioTrack({ deviceId: { exact: microphoneId } })
-    //     : null;
-  
-    //   const [videoTrack, audioTrack] = await Promise.all([
-    //     videoTrackPromise,
-    //     audioTrackPromise,
-    //   ]);
-    //   setLocalVideoTrack(videoTrack);
-    //   setLocalAudioTrack(audioTrack);
-    //   // ✅ publish to LiveKit room
-    //   // if (videoTrack) await room.localParticipant.publishTrack(videoTrack);
-    //   // if (audioTrack) await room.localParticipant.publishTrack(audioTrack);
-    //   if (videoTrack && videoRef.current) {
-    //     const mediaStream = new MediaStream([videoTrack.mediaStreamTrack]);
-    //     videoRef.current.srcObject = mediaStream;
-    //     videoRef.current.play().catch(console.error);
-    //   }
-  
-      setDevicePermissionsGranted(true);
+
+      setCameraId(localCameraId);
+      setMicrophoneId(localMicrophoneId);
     } catch (err) {
       setError(
         "Accesul la cameră și microfon a fost refuzat. Te rugăm să activezi permisiunile."
@@ -192,7 +173,7 @@ export default function CameraAccessPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-4">
-      {cameraId !== 'off' && (
+      {localCameraId !== 'off' && (
         <div className="w-40 h-40 rounded-lg overflow-hidden border border-gray-300 shadow-md">
           <video
             ref={videoRef}
@@ -221,7 +202,7 @@ export default function CameraAccessPage() {
           {/* Camera Selection */}
           <div className="w-80">
             <label className="block text-gray-700 mb-1">Camera</label>
-            <Select onValueChange={onVideoSelectChange} value={cameraId || undefined}>
+            <Select onValueChange={onVideoSelectChange} value={localCameraId || undefined}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a camera" />
               </SelectTrigger>
@@ -245,7 +226,7 @@ export default function CameraAccessPage() {
           {/* Microphone Selection */}
           <div className="w-80">
             <label className="block text-gray-700 mb-1">Microfon</label>
-            <Select onValueChange={onAudioSelectChange} value={microphoneId || undefined}>
+            <Select onValueChange={onAudioSelectChange} value={localMicrophoneId || undefined}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a microphone" />
               </SelectTrigger>
@@ -265,7 +246,7 @@ export default function CameraAccessPage() {
           </div>
 
           {/* Continue Button */}
-          <Button className="w-80 text-white" onClick={requestAccess}>
+          <Button className="w-80 text-white" onClick={goNext}>
             Continue to Game
           </Button>
         </>

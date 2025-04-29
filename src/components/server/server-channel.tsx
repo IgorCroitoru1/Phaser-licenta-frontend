@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { Channel, useChannelStore } from "@/store/useChannelStore";
-import { useGameStore } from "@/store/useGameStore";
 import { on } from "events";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -19,7 +18,7 @@ export function ServerChannel({
     channel,
   }: ServerChannelProps) {
 
-  const switchScene = useGameStore((state) => state.switchScene);
+  const switchScene = useChannelStore((state) => state.switchScene);
   const activeChannel = useChannelStore((state) => state.activeChannel);
   const setActiveChannel = useChannelStore((state) => state.setActiveChannel);
     //const { onOpen } = useModal();

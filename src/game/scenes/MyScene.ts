@@ -16,13 +16,17 @@ import { Player } from "../game-objects/player/player";
 import { RoomZone } from "../game-objects/objects/zone";
 import { PLAYER_VISION_MASK_SIZE } from "../common/config";
 import { GameEvents } from "../common/common";
+import { userRefsManager } from "@/user/UserRefsManager";
 
 export class MyScene extends Phaser.Scene {
-    public customEvents: GameEventEmitter
 
+    public customEvents: GameEventEmitter
+    private lastCameraState = { worldX: 0, worldY: 0, scrollX: 0, scrollY: 0, zoom: 1 };
+    private text: Phaser.GameObjects.Text;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     private map: Phaser.Tilemaps.Tilemap;
     private graphics: Phaser.GameObjects.Graphics;
+    private debugGraphics: Phaser.GameObjects.Graphics;
     private fog: Phaser.GameObjects.Graphics;
     private visionMask: Phaser.GameObjects.Graphics;
     private mask: Phaser.Display.Masks.GeometryMask;
@@ -52,6 +56,7 @@ export class MyScene extends Phaser.Scene {
     }
     init(data: { cfg: { name: string } }) {
         this.cfg = data.cfg;
+        
     }
     preload() {
         // this.load.image("grass", "tiles/grass.png");
@@ -85,9 +90,10 @@ export class MyScene extends Phaser.Scene {
         // this.layersWithTileset = {};
         this.createdLayers = {};
         this.createMap(this.map);
-        console.log(this.map);
         //this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+        
         this.setupCamera();
+
         this.setupCameraDrag(this.cameras.main);
         this.setupCameraZoom(this.cameras.main);
         this.collisionLayer = this.createdLayers[TILED_LAYER_NAMES.COLLIDES];
@@ -121,16 +127,103 @@ export class MyScene extends Phaser.Scene {
             this.createDoors(this.map, layer.name, layer.zoneId);
         });
        // this.setupDoorsInteractivity();
-        this.setupPlayer(true, "local-player");
+        //this.setupPlayer(true, "local-player");
         this.setupColliders();
+
+        this.game.events.on(Phaser.Core.Events.DESTROY, () => {
+            this.destroy();
+        })
+       
+        this.scale.on(Phaser.Scale.Events.RESIZE, () => {
+            this.onResize();
+        }
+
+        )
+       
+        this.cameras.main.on(Phaser.Scenes.Events.PRE_RENDER, () => {
+            this.checkCameraChanges();
+
+        });
+        // })
         EventBus.emit("current-scene-ready", this);
         //const doorsLayers = zone.filter((layer) =>  layer.name.endsWith(`/${TILED_LAYER_NAMES.OPEN_DOOR}`) || layer.name.endsWith(`/${TILED_LAYER_NAMES.CLOSED_DOOR}`));
-        console.log(this.objectsByZoneId);
     }
     update() {
         this.updateFog();
         this.trackUserZone();
+        this.checkCameraChanges()
+        //  this.updatePlayerPosition()
+
+
+        // this.game.events.on(Phaser.Core., () => {
+        //     this.onResize();
+        // }
     }
+    private updateDebug() {
+        const camera = this.cameras.main;
+        const { scrollX, scrollY, worldView, zoom } = camera;
+    
+        // Clear previous drawings
+        this.debugGraphics.clear();
+    
+        // 3. Draw camera center point (scrollX/Y)
+        this.debugGraphics.fillStyle(0xff0000, 1); // Red
+        this.debugGraphics.fillCircle(scrollX, scrollY, 10);
+    
+        // 4. Draw worldView rectangle (visible area)
+        this.debugGraphics.lineStyle(2, 0x00ff00); // Green
+        this.debugGraphics.strokeRect(
+          worldView.x,
+          worldView.y,
+          worldView.width,
+          worldView.height
+        );
+    
+        // 5. Update debug text
+        this.text.setText([
+          `ScrollX/Y: ${scrollX.toFixed(1)}, ${scrollY.toFixed(1)}`,
+          `WorldView: X=${worldView.x.toFixed(1)}, Y=${worldView.y.toFixed(1)}`,
+          `Zoom: ${zoom.toFixed(2)}`,
+          `Viewport: ${worldView.width.toFixed(0)}x${worldView.height.toFixed(0)}`
+        ]);
+      }
+    private cameraChanged(): boolean {
+        try{
+            // const changed = (
+            //     this.cameras.main.scrollX !== this.lastCameraState.x ||
+            //     this.cameras.main.scrollY !== this.lastCameraState.y ||
+            //     this.cameras.main.zoom !== this.lastCameraState.zoom
+            //   );
+            const changed = (
+                    this.cameras.main.worldView.x !== this.lastCameraState.worldX ||
+                    this.cameras.main.worldView.y !== this.lastCameraState.worldY ||
+                    this.cameras.main.scrollX !== this.lastCameraState.worldX ||
+                    this.cameras.main.scrollY !== this.lastCameraState.worldY ||
+                    this.cameras.main.zoom !== this.lastCameraState.zoom
+                  );
+              if (changed) {
+                //  console.log( "Camera worldX: ", this.cameras.main.worldView.x, "Camera worldY: ", this.cameras.main.worldView.y, "Camera Zoom: ", this.cameras.main.zoom);
+                this.lastCameraState = {
+                  worldX: this.cameras.main.worldView.x,
+                  worldY: this.cameras.main.worldView.y,
+                    scrollX: this.cameras.main.scrollX,
+                    scrollY: this.cameras.main.scrollY,
+                  zoom: this.cameras.main.zoom
+                };
+              }
+              return changed;
+        }
+        catch(e){
+            console.error("Error in cameraChanged: ", e);
+            return false;
+        }
+       
+      }
+     
+    
+      destroy() {
+        console.log("Destroying MyScene");
+      }
     private createDoors(
         map: Phaser.Tilemaps.Tilemap,
         layerName: string,
@@ -224,6 +317,17 @@ export class MyScene extends Phaser.Scene {
             }
         });
     }
+    // private updatePlayerPosition() {
+    //     const camera = this.cameras.main;
+
+    //     // Calculate the sprite's screen position
+    //     if (!this._player) return;
+    //     const screenX = (this._player.x - camera.worldView.x) * camera.zoom;
+    //     const screenY = (this._player.y - camera.worldView.y) * camera.zoom;
+    //     // console.log("MyScene: Player screen coords: ", "playerX: ", this._player.x, "playerY: ", this._player.y, "screenX: ", screenX, "screenY: ", screenY);
+    //     // Emit the player's position to update the HTML div
+    //     this.customEvents.emit(GameEvents.LOCAL_PLAYER_MOVED, {id: this._player.id, x: screenX, y: screenY, zoom: camera.zoom });
+    // }
     private createZones(map: Phaser.Tilemaps.Tilemap, layerName: string): void {
         const validTiledObjects = getTiledZoneObjectsFromMap(map, layerName);
         validTiledObjects.forEach((tiledObject) => {
@@ -241,16 +345,28 @@ export class MyScene extends Phaser.Scene {
             };
         });
     }
-
+    private checkCameraChanges(){
+        // this.cameras.main.
+            if (this.cameraChanged()) {
+              this.customEvents.emit(GameEvents.CAMERA_CHANGE, { 
+                worldX: this.cameras.main.worldView.x,
+                worldY: this.cameras.main.worldView.y,
+                scrollX: this.cameras.main.scrollX,
+                scrollY: this.cameras.main.scrollY,
+                zoom: this.cameras.main.zoom
+              });
+                //  console.log("Camera changed: ", this.cameras.main.worldView.x, this.cameras.main.worldView.y, this.cameras.main.zoom);       
+            }
+    }
     private setupCamera(): void {
         const camera = this.cameras.main;
         this.minZoom =
             this.scale.height /
             (this.map.heightInPixels * GameConfig.mapScaleY);
         camera.zoom = this.minZoom;
-        EventBus.emit(GameEvents.ZOOM_CHANGE, camera.zoom);
-
-        console.log("Min Zoom: ", this.minZoom);
+        //EventBus.emit(GameEvents.ZOOM_CHANGE, camera.zoom);
+        //this.customEvents.emit(GameEvents.ZOOM_CHANGE, camera.zoom);
+        //console.log("Min Zoom: ", this.minZoom);
         let calculatedBounds = this.calculateBounds(
             this.map.heightInPixels,
             this.map.widthInPixels
@@ -261,6 +377,7 @@ export class MyScene extends Phaser.Scene {
             calculatedBounds.width,
             calculatedBounds.height
         );
+       
     }
 
     private calculateBounds(
@@ -318,7 +435,6 @@ export class MyScene extends Phaser.Scene {
             sceneWidth / 2,
             sceneHeight / 2
         );
-
         // ✅ Adjust the camera scroll so the world point remains in the same place
         camera.scrollX += worldCenterBefore.x - worldCenterAfter.x;
         camera.scrollY += worldCenterBefore.y - worldCenterAfter.y;
@@ -336,9 +452,18 @@ export class MyScene extends Phaser.Scene {
 
             const worldX = pointer.worldX;
             const worldY = pointer.worldY;
-
+         
+            if(this._player){
+                const screenX = (this._player.x - camera.worldView.x) * this.cameras.main.zoom;
+                const screenY = (this._player.y - camera.worldView.y) * this.cameras.main.zoom;
+            
+                console.log(`Player screen coords: (${screenX}, ${screenY})`);
+            }
+            console.log("Camera scrollX: ", camera.scrollX, "Camera scrollY: ", camera.scrollY);
+            console.log("Camera x: ", camera.worldView.x, "Camera y: ", camera.worldView.y);
             console.log("Current zoom: ", camera.zoom);
             console.log(`Mouse Clicked World: (${worldX}, ${worldY})`);
+            console.log("Mouse Clicked Screen: ", pointer.x, pointer.y);
         });
 
         this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
@@ -380,8 +505,8 @@ export class MyScene extends Phaser.Scene {
                 const newZoom = camera.zoom - camera.zoom * 0.001 * deltaY;
 
                 camera.zoom = Phaser.Math.Clamp(newZoom, this.minZoom, 2);
-                EventBus.emit(GameEvents.ZOOM_CHANGE, camera.zoom);
-
+                //EventBus.emit(GameEvents.ZOOM_CHANGE, camera.zoom);
+                this.customEvents.emit(GameEvents.ZOOM_CHANGE, camera.zoom);
                 camera.preRender();
                 const newWorldPoint = camera.getWorldPoint(
                     pointer.x,
@@ -500,11 +625,14 @@ export class MyScene extends Phaser.Scene {
         x: number = 700,
         y: number = 1030
     ) {
+       
+
         if (localPlayer) {
             this._player = new Player({
                 scene: this,
                 position: { x: this.scale.width / 2, y: this.scale.height / 2 },
                 isLocal: localPlayer,
+                playerId: id,
             });
             console.log("Local player created: ", this._player);
             if (this._player) {
@@ -524,6 +652,7 @@ export class MyScene extends Phaser.Scene {
                         y
                     },
                     isLocal: false,
+                    playerId: id,
                 });
                 console.log(player);
                 this.networkPlayers.set(id, player);

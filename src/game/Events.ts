@@ -1,4 +1,4 @@
-import { Events } from 'phaser';
+import { Events, Game } from 'phaser';
 import { GameEvents } from './common/common';
 import { Position } from './common/types';
 import { Door } from './game-objects/objects/door';
@@ -12,6 +12,9 @@ export interface GameEventPayloads {
     [GameEvents.DOOR_TRIGGER]: { door:Door, doorId: number };
     [GameEvents.PLAYER_JOINED]: { playerId: string };
     [GameEvents.CURRENT_ZONE]: { zoneId: number };
+    [GameEvents.ZOOM_CHANGE]: number; // Zoom level
+    [GameEvents.CAMERA_CHANGE]: { worldX: number; worldY: number; scrollX: number; scrollY:number; zoom: number }; // Camera position and zoom level
+    [GameEvents.LOCAL_PLAYER_MOVED]: { id: any, x: number; y: number; zoom: number }; // Local player position and zoom level
   }
 
   
