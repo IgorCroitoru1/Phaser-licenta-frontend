@@ -82,6 +82,7 @@ export class UserRefsManager {
     // )`;
     // `translate(${payload.x}px, ${payload.y}px) scale(${1 / payload.zoom})`
     element.style.transform = `translate(${screenX}px, ${screenY}px) scale(${zoom})`;
+    // element.style.transition= 'transform 50ms linear' 
     // element.style.transform = matrix;
    // element.style.transformOrigin = 'top left';
     // element.style.width = `${scaledWidth}px`;

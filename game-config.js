@@ -18,7 +18,7 @@ const GameConfig = {
     // Dragging (Grabbing) Sensitivity
     dragFriction: 0.9, // Controls inertia slowdown
     dragSmoothness: 16, // Delay per frame for smoothing
-
+    
 
 
     //temp

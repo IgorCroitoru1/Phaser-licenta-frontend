@@ -10,7 +10,6 @@ export type CharacterConfig = {
   assetKey: string;
   frame?: number;
   speed: number;
-  id?: string;
   isPlayer: boolean;
 };
 
@@ -25,7 +24,6 @@ export abstract class CharacterGameObject extends Phaser.Physics.Arcade.Sprite i
       assetKey,
       frame,
       speed,
-      id,
       isPlayer,
     } = config;
     const { x, y } = position;
@@ -51,7 +49,8 @@ export abstract class CharacterGameObject extends Phaser.Physics.Arcade.Sprite i
   }
 
 
-  public update(): void {
+  update(){
+    
   }
 
   public disableObject(): void {

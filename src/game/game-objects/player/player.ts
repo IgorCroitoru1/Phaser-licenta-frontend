@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { GameObject, Position } from '../../common/types';
-import { PLAYER_SPEED } from '../../common/config';
+import { NETWORK_TRESHOLD, PLAYER_SPEED } from '../../common/config';
 import { CharacterGameObject } from '../common/character-game-object';
 import { CollidingObjectsComponent } from '../../components/game-object/colliding-objects-component';
 import GameConfig from '../../../../game-config';
@@ -12,18 +12,17 @@ export type PlayerConfig = {
   scene: Phaser.Scene;
   position: Position;
   isLocal?: boolean;
-  playerId?: any;
+  playerId: any;
 };
 
 export class Player extends CharacterGameObject {
   private _collidingObjectsComponent: CollidingObjectsComponent;
   private _cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   private _isLocal: boolean;
-  private _id: any
-  private _lerpFactor: number = 0.2;
+  private _lerpFactor: number = 0.3;
   private _lastPosition: Position = { x: 0, y: 0 };
+  private _id: any
   constructor(config: PlayerConfig) {
-
     super({
       scene: config.scene,
       position: config.position,
@@ -32,9 +31,10 @@ export class Player extends CharacterGameObject {
       speed: PLAYER_SPEED,
       assetKey: "",});
 
+      this._id = config.playerId;
       this._isLocal = config.isLocal || false;
       this._targetPosition = { ...config.position };
-      this._id = config.playerId || null
+  
       if (this._isLocal) {
         this._cursors = config.scene.input.keyboard?.createCursorKeys();
         this.setTint(0x00ff00); // Green tint for local player
@@ -59,8 +59,9 @@ export class Player extends CharacterGameObject {
     // update physics body
     //this.physicsBody.setSize(12, 16, true).setOffset(this.width / 2 - 5, this.height / 2);
   }
-  get id(){
-    return this._id
+
+  get id(): any {
+    return this._id;
   }
   private setupPhysics(): void {
     //this.setCollideWorldBounds(true);
@@ -79,6 +80,9 @@ export class Player extends CharacterGameObject {
  
   get collidingObjects(): GameObject[] {
     return this._collidingObjectsComponent.objects;
+  }
+  get lastPosition(): Position {
+    return this._lastPosition;
   }
 
   public update(): void {
@@ -130,7 +134,18 @@ export class Player extends CharacterGameObject {
   }
 
   public updateFromNetwork(position: Position): void {
-    if (this._isLocal) return;
+    if (this._isLocal) {
+      // 🔥 Reconciliation logic
+      const dx = Math.abs(this.x - position.x);
+      const dy = Math.abs(this.y - position.y);
+  
+      if (dx > NETWORK_TRESHOLD || dy > NETWORK_TRESHOLD) {
+        // Correct hard if too far
+        this.x = Phaser.Math.Linear(this.x, position.x, this._lerpFactor);
+        this.y = Phaser.Math.Linear(this.y, position.y, this._lerpFactor);
+      }
+      return;
+    }
     this._targetPosition = position;
   }
 

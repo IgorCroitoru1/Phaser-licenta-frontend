@@ -17,6 +17,7 @@ import { RoomZone } from "../game-objects/objects/zone";
 import { PLAYER_VISION_MASK_SIZE } from "../common/config";
 import { GameEvents } from "../common/common";
 import { userRefsManager } from "@/user/UserRefsManager";
+import { PlayerPositionUpdate, Position } from "../common/types";
 
 export class MyScene extends Phaser.Scene {
 
@@ -142,22 +143,52 @@ export class MyScene extends Phaser.Scene {
        
         this.cameras.main.on(Phaser.Scenes.Events.PRE_RENDER, () => {
             this.checkCameraChanges();
+            this.emitPlayersPosition();
 
         });
         // })
         EventBus.emit("current-scene-ready", this);
         //const doorsLayers = zone.filter((layer) =>  layer.name.endsWith(`/${TILED_LAYER_NAMES.OPEN_DOOR}`) || layer.name.endsWith(`/${TILED_LAYER_NAMES.CLOSED_DOOR}`));
     }
+    preUpdate(){
+
+    }
     update() {
         this.updateFog();
         this.trackUserZone();
         this.checkCameraChanges()
+        // this.emitPlayersPosition();
         //  this.updatePlayerPosition()
 
 
         // this.game.events.on(Phaser.Core., () => {
         //     this.onResize();
         // }
+    }
+
+    public emitPlayersPosition(): void{
+        const playersPositions: PlayerPositionUpdate[] = [];
+        if(this._player){
+            // if(this._player.lastPosition.x !== this._player.x || this._player.lastPosition.y !== this._player.y){
+                playersPositions.push({
+                    x: this._player.x,
+                    y: this._player.y,
+                    id: this._player.id,
+                });
+            // }
+        }
+        this.networkPlayers.forEach((player) => {
+            // if (player.lastPosition.x !== player.x || player.lastPosition.y !== player.y) {
+                playersPositions.push({
+                    x: player.x,
+                    y: player.y,
+                    id: player.id,
+                });
+            // }
+        });
+        if(playersPositions.length > 0){
+            this.customEvents.emit(GameEvents.PLAYERS_POSITION_UPDATE, playersPositions);
+        }
     }
     private updateDebug() {
         const camera = this.cameras.main;
@@ -606,6 +637,7 @@ export class MyScene extends Phaser.Scene {
             scene: this,
             position: { x: this.scale.width / 2, y: this.scale.height / 2 },
             isLocal: isLocal,
+            playerId: id
         });
         if (this._player) {
             this.physics.add.collider(this._player, this.collisionLayer);
@@ -667,14 +699,19 @@ export class MyScene extends Phaser.Scene {
         }
     }
 
-    updatePlayer(id: string, x: number, y: number) {
-        const sprite = this.networkPlayers.get(id);
+    updatePlayer(id: any, x: number, y: number) {
+        let sprite;
+        if(this._player && this._player.id === id){
+            sprite = this._player;
+        }
+        else if(this.networkPlayers.has(id)){
+            sprite = this.networkPlayers.get(id);
+        }
         if (!sprite) return;
         // const distance = Phaser.Math.Distance.Between(sprite.x, sprite.y, x, y);
         sprite.updateFromNetwork({
           x,
-          y
-        })
+          y})
     }
 
     removePlayer(id: string, localPlayer: boolean) {

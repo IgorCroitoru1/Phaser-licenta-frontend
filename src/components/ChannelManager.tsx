@@ -10,7 +10,7 @@ import { Position } from "@/game/common/types";
 import { ColyseusEventPayloads } from "@/utils/colyseus-events";
 import toast from "react-hot-toast";
 import throttle from "lodash.throttle";
-import { useChannelStore } from "@/store/useChannelStore";
+import { Channel, useChannelStore } from "@/store/useChannelStore";
 import { ChannelUser } from "@/user/ChannelUser";
 import { TEMP_USER_ID } from "../../config";
 import { userRefsManager } from "@/user/UserRefsManager";
@@ -56,10 +56,13 @@ export const ChannelManager = () => {
     const removeUser = useChannelStore((state) => state.removeUser);
     const isGameLoaded = useChannelStore((state) => state.loaded);
     const { room, isConnected, joinRoom, leaveRoom } = useColyseus();
-    const setSwitchScene = useChannelStore((state) => state.setSwitchScene);
-    const switchScene = useCallback(async (newMapName: string, newRoomName: string): Promise<boolean> => {
-        console.log("Switching scene");
-    
+    const setSwitchChannel = useChannelStore((state) => state.setSwitchCannel);
+    const setSceneLoaded = useChannelStore((state) => state.setSceneLoaded);
+    const setActiveChannel = useChannelStore((state) => state.setActiveChannel);
+    const clear = useChannelStore((state) => state.clear);
+    const switchChannel = useCallback(async (channel: Channel): Promise<boolean> => {
+        console.log("Switching channel");
+        clear();
         const game = phaserRef.current?.game;
         if (!game) return false;
     
@@ -70,23 +73,25 @@ export const ChannelManager = () => {
         // Remove existing scene safely
         const currentSceneKey = 'MyScene';
         const existingScene = game.scene.getScene(currentSceneKey);
-        console.log(existingScene)
+        
         if (existingScene) {
             game.scene.stop(currentSceneKey);
             game.scene.remove(currentSceneKey);
+            setSceneLoaded(false);
             console.log("Scene stopped and removed");
         }
             const myScene = new MyScene(); // You might want to pass config her
-            game.scene.add(currentSceneKey, myScene, true, { cfg: {name: newMapName} });
+            game.scene.add(currentSceneKey, myScene, true, { cfg: {name: channel.mapName} });
             //game.scene.start(currentSceneKey, { cfg: {name: newMapName} });
             console.log("Scene added and started");
        
     
         try {
-            await joinRoom(newRoomName, {
-                mapId: newMapName,
+            await joinRoom(channel.colyseusRoomName, {
+                mapId: channel.mapName,
                 token: GameConfig.TEMP_TOKEN,
             });
+            setActiveChannel(channel)
         } catch (error) {
             console.error("Failed to join room:", error);
             return false;
@@ -114,8 +119,8 @@ export const ChannelManager = () => {
     
 
     useEffect(() => {
-        setSwitchScene(switchScene);
-    }, [switchScene]);
+        setSwitchChannel(switchChannel);
+    }, [switchChannel]);
     useEffect(() => {
        console.log("Switch scene recreatedd")
 
@@ -134,7 +139,7 @@ export const ChannelManager = () => {
         const createThrottledSendPlayerMove = (room: Room) =>
         throttle((payload: ColyseusEventPayloads[GameEvents.PLAYER_MOVE]) => {
             sendRoomEvent(room, GameEvents.PLAYER_MOVE, payload);
-        }, 100);
+        }, 70);
             
         const createThrottledZoneChange = (room: Room) =>
         throttle((payload: ColyseusEventPayloads[GameEvents.CURRENT_ZONE]) => {
@@ -144,7 +149,7 @@ export const ChannelManager = () => {
         const throttledSendPlayerMove = createThrottledSendPlayerMove(room);
         const throttledSendZoneChange = createThrottledZoneChange(room);
         
-        const onPlayerMove = (payload: ColyseusEventPayloads[GameEvents.PLAYER_MOVE]) => {
+        const onLocalPlayerMove = (payload: ColyseusEventPayloads[GameEvents.PLAYER_MOVE]) => {
             throttledSendPlayerMove(payload);
         };
         
@@ -160,13 +165,19 @@ export const ChannelManager = () => {
         const onCameraChange = (payload: GameEventPayloads[GameEvents.CAMERA_CHANGE]) => {
             userRefsManager.updateCamera(payload.worldX, payload.worldY, payload.scrollX, payload.scrollY, payload.zoom);
         }
+        const onPlayersPositionUpdate = (payload: GameEventPayloads[GameEvents.PLAYERS_POSITION_UPDATE]) => {
+            payload.forEach((player) => {
+                userRefsManager.updateWorldPosition(player.id, player.x, player.y);
+            })
+        }
         // scene.customEvents.on(GameEvents.LOCAL_PLAYER_MOVED, (payload: GameEventPayloads[GameEvents.LOCAL_PLAYER_MOVED]) => {
         //     const ref = userRefsManager.getRef(payload.id)
         //     if(ref){
         //         ref.element.style.transform = `translate(${payload.x}px, ${payload.y}px) scale(${payload.zoom})`;
         //     }
         // })
-        scene.customEvents.on(GameEvents.PLAYER_MOVE, onPlayerMove);
+        scene.customEvents.on(GameEvents.PLAYERS_POSITION_UPDATE, onPlayersPositionUpdate);
+        scene.customEvents.on(GameEvents.PLAYER_MOVE, onLocalPlayerMove);
         scene.customEvents.on(GameEvents.DOOR_TRIGGER, onDoorTrigger);
         scene.customEvents.on(GameEvents.CURRENT_ZONE, onZoneChange);
         scene.customEvents.on(GameEvents.CAMERA_CHANGE, onCameraChange);
@@ -181,7 +192,7 @@ export const ChannelManager = () => {
                     player.y,
                 );
                 scene.updatePlayer(id, player.x, player.y);
-                userRefsManager.updateWorldPosition(id, player.x, player.y);
+                //userRefsManager.updateWorldPosition(id, player.x, player.y);
 
             });
             scene.addPlayer(id, id === TEMP_USER_ID, player.x, player.y);
@@ -216,7 +227,8 @@ export const ChannelManager = () => {
         return  () => {
             //
             console.log("👋 Cleaning up GameManager...");
-            scene.customEvents.off(GameEvents.PLAYER_MOVE, onPlayerMove);
+            scene.customEvents.off(GameEvents.PLAYERS_POSITION_UPDATE, onPlayersPositionUpdate);
+            scene.customEvents.off(GameEvents.PLAYER_MOVE, onLocalPlayerMove);
             scene.customEvents.off(GameEvents.DOOR_TRIGGER, onDoorTrigger);
             scene.customEvents.off(GameEvents.CURRENT_ZONE, onZoneChange);
             scene.customEvents.off(GameEvents.CAMERA_CHANGE, onCameraChange);

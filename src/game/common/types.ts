@@ -16,3 +16,7 @@ export interface CustomGameObject {
   enableObject(): void;
   disableObject(): void;
 }
+
+export type PlayerPositionUpdate = {
+  id: string;
+} & Position;

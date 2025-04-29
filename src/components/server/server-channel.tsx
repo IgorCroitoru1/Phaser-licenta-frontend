@@ -18,7 +18,7 @@ export function ServerChannel({
     channel,
   }: ServerChannelProps) {
 
-  const switchScene = useChannelStore((state) => state.switchScene);
+  const switchChannel = useChannelStore((state) => state.switchChannel);
   const activeChannel = useChannelStore((state) => state.activeChannel);
   const setActiveChannel = useChannelStore((state) => state.setActiveChannel);
     //const { onOpen } = useModal();
@@ -42,7 +42,7 @@ export function ServerChannel({
     
     const onClick = async () => {
       if (activeChannel?.id !== channel.id) {
-          const success = await switchScene(channel.mapName, channel.colyseusRoomName, channel.sceneName);
+          const success = await switchChannel(channel);
           console.log("Success", success);
           if (success) {
               setActiveChannel(channel);

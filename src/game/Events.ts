@@ -1,6 +1,6 @@
 import { Events, Game } from 'phaser';
 import { GameEvents } from './common/common';
-import { Position } from './common/types';
+import { PlayerPositionUpdate, Position } from './common/types';
 import { Door } from './game-objects/objects/door';
 
 // Used to emit events between React components and Phaser scenes
@@ -8,13 +8,14 @@ import { Door } from './game-objects/objects/door';
 export const EventBus = new Events.EventEmitter();
 
 export interface GameEventPayloads {
-    [GameEvents.PLAYER_MOVE]: Position;
+    [GameEvents.PLAYER_MOVE]: Position; // Player position and velocity
     [GameEvents.DOOR_TRIGGER]: { door:Door, doorId: number };
     [GameEvents.PLAYER_JOINED]: { playerId: string };
     [GameEvents.CURRENT_ZONE]: { zoneId: number };
     [GameEvents.ZOOM_CHANGE]: number; // Zoom level
     [GameEvents.CAMERA_CHANGE]: { worldX: number; worldY: number; scrollX: number; scrollY:number; zoom: number }; // Camera position and zoom level
-    [GameEvents.LOCAL_PLAYER_MOVED]: { id: any, x: number; y: number; zoom: number }; // Local player position and zoom level
+    [GameEvents.PLAYERS_POSITION_UPDATE]: PlayerPositionUpdate[]; // Array of player position updates
+    // [GameEvents.LOCAL_PLAYER_MOVED]: { id: any, x: number; y: number; zoom: number }; // Local player position and zoom level
   }
 
   

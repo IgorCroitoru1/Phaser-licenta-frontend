@@ -60,8 +60,8 @@ type GameState = {
 
 type ChannelActions = {
   setActiveChannel: (channel: Channel | null) => void;
-  switchScene: (map: string, room: string, scene?: string) => Promise<boolean>;
-  setSwitchScene: (fn: ChannelActions['switchScene']) => void;
+  switchChannel: (channel: Channel) => Promise<boolean>;
+  setSwitchCannel: (fn: ChannelActions['switchChannel']) => void;
   clear: () => void;
 
   
@@ -131,8 +131,8 @@ export const useChannelStore = create<ChannelStore>()(
     sceneLoaded: false,
 
     setActiveChannel: (channel) => set({ activeChannel: channel }),
-    switchScene: async () => false,
-    setSwitchScene: (fn) => set({ switchScene: fn }),
+    switchChannel: async () => false,
+    setSwitchCannel: (fn) => set({ switchChannel: fn }),
 
     clear: () =>
       set((state) => {
