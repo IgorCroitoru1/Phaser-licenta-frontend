@@ -92,7 +92,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
             if (currentActiveScene) {
                 currentActiveScene(scene_instance);
             }
-
             if (typeof ref === 'function') {
                 ref({ game: game.current, scene: scene_instance });
             } else if (ref) {
@@ -112,7 +111,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
             EventBus.off('current-scene-ready', onSceneReady);
         };
     }, [currentActiveScene, ref]);
-    //console.log(tracks, "cameraTracks")
     return (
         <div ref={containerRef} id="game-container" style={{position: 'relative', width: '100%', height: '100%', minHeight: '50px', minWidth: '50px'}}>
           <UserRenderer/>
@@ -120,7 +118,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
                 <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef}/>
             //    <PlayerVideo key={trackRef.participant.identity} trackRef={trackRef} />
             ))} */}
-            {/* <Toaster /> */}
+            <Toaster />
         </div>
     );
 });

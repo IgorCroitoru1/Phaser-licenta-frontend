@@ -18,6 +18,7 @@ import { useDeviceSelection } from '@/context/DeviceSelectionContext';
 import CameraAccessPage from '@/pages/camera-access';
 import { useChannelStore, useDeviceStore } from '@/store/useChannelStore';
 import PlayerVideo from './ui/Player2';
+import api from '@/lib/axios';
 const serverUrl = LIVEKIT_URL;
 const token = TEMP_TOKEN;
 export const LiveKitProvider = ({ children }: PropsWithChildren) => {
@@ -54,7 +55,8 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
 
         // 3. Connect to new room
         console.log('🔗 Connecting to new room...');
-        await roomInstance.connect(LIVEKIT_URL, TEMP_TOKEN, {
+        const token = await getLivekitToken(activeChannel.livekitRoomName);
+        await roomInstance.connect(LIVEKIT_URL, token, {
           
         });
 
@@ -153,45 +155,53 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
        <div data-lk-theme="default">
       {/* <MyVideoConference/> */}
       <ControlBar/>
+      <RoomAudioRenderer/>
        </div>
       {children}
     </RoomContext.Provider>
   );
 };
 
-// export function MyVideoConference() {
-//   // `useTracks` returns all camera and screen share tracks. If a user
-//   // joins without a published camera track, a placeholder track is returned.
-//   const tracks = useTracks(
-//     [
-//       { source: Track.Source.Camera, withPlaceholder: true },
-//       { source: Track.Source.ScreenShare, withPlaceholder: false },
-//     ],
-//     { onlySubscribed: false },
-//   );
- 
-//   return (
+export const getLivekitToken = async (room: string): Promise<string> => {
+  const res = await api.get<{token: string}>(`/livekit/token?room=${room}`);
+  return res.data.token;
+};
 
-//     // tracks.map((trackRef) => (
-//     //   <VideoTrack trackRef={trackRef}
-//     //   style={{
-//     //     width: '160px',
-//     //     height: '120px',
-//     //     overflow: 'hidden',
-//     //     borderRadius: '12px',
-//     //     background: 'black',
-//     //   }}
-//     //   key={trackRef.participant.identity}/>
-//     //             // <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef}/>
-//     //           //  <PlayerVideo key={trackRef.participant.identity} trackRef={trackRef} />
-//     //         ))
-//     // <TrackLoop tracks={tracks}>
-//     // <ParticipantTile/>
-//     // </TrackLoop>
-//     // <GridLayout tracks={tracks} style={{ height: 'calc(100vh - var(--lk-control-bar-height))' }}>
-//     //   {/* The GridLayout accepts zero or one child. The child is used
-//     //   as a template to render all passed in tracks. */}
-//     //   <ParticipantTile />
-//     // </GridLayout>
-//   );
-// }
+export function MyVideoConference() {
+  // `useTracks` returns all camera and screen share tracks. If a user
+  // joins without a published camera track, a placeholder track is returned.
+  const tracks = useTracks(
+    [
+      { source: Track.Source.Camera, withPlaceholder: true },
+      { source: Track.Source.ScreenShare, withPlaceholder: false },
+    ],
+    { onlySubscribed: false },
+  );
+ 
+  return (
+
+    <>
+      {tracks.map((trackRef) => (
+        <VideoTrack
+          trackRef={trackRef}
+          style={{
+            width: '160px',
+            height: '120px',
+            overflow: 'hidden',
+            borderRadius: '12px',
+            background: 'black',
+          }}
+          key={trackRef.participant.identity}
+        />
+      ))}
+      <TrackLoop tracks={tracks}>
+        <ParticipantTile />
+      </TrackLoop>
+      <GridLayout tracks={tracks} style={{ height: 'calc(100vh - var(--lk-control-bar-height))' }}>
+        {/* The GridLayout accepts zero or one child. The child is used
+        as a template to render all passed in tracks. */}
+        <ParticipantTile />
+      </GridLayout>
+    </>
+  );
+}

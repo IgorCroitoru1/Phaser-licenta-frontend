@@ -29,6 +29,7 @@ export enum GameEvents  {
   PLAYER_MOVE = "move",
   PLAYER_JOINED = "player_joined",
   PLAYERS_POSITION_UPDATE = "players_position_update",
+  INIT_USERS = "init_users",
   // LOCAL_PLAYER_MOVED = "local_player_moved",
   PLAYER_LEFT = "player_left",
   CURRENT_ZONE = "current_zone",

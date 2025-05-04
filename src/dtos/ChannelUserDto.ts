@@ -1,6 +1,5 @@
 export class ChannelUserDto{
     id: string
-    colyseusId: string
     email: string
     name: string
     avatar: string

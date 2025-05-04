@@ -1,51 +1,26 @@
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
-import { useEffect } from "react";
-import { useRouter } from "next/router";
-import { LiveKitProvider, MyVideoConference } from "@/components/LiveKit";
-import { DeviceSelectionProvider } from "@/context/DeviceSelectionContext";
-// import { MediaStreamProvider, useMediaStream } from "@/context/MediaStreamContext";
-// import { DeviceSelectionProvider, useDeviceSelection } from "@/context/DeviceSelectionContext";
+// // pages/_app.tsx
+// import "@/styles/globals.css";
+// import type { AppProps } from "next/app";
+// import { NextPage } from "next";
+// import { ReactNode } from "react";
 
-function AppContent({ Component, pageProps }: AppProps) {
-    // const { cameraId, microphoneId } = useDeviceSelection();
-    const router = useRouter();
+// // Extend the NextPage type to include the Layout property
+// type PageWithLayout = NextPage & {
+//   Layout?: ({ children }: { children: ReactNode }) => JSX.Element;
+// };
 
-    // useEffect(() => {
-    //     // ✅ Redirect if no selection has been made (cameraId or microphoneId is null)
-    //     if ((!cameraId || !microphoneId) && router.pathname !== "/camera-access") {
-    //         router.push("/camera-access");
-    //     }
-    // }, [cameraId, microphoneId, router]);
+// // Extend AppProps to use our custom page type
+// type AppPropsWithLayout = AppProps & {
+//   Component: PageWithLayout;
+// };
 
-    return (
-        <>
-         <Component {...pageProps} />
-        </>
-       
-       
-    );
-   
-}
-
-// export default function App(props: AppProps) {
-//     return (
-//         <MediaStreamProvider>
-//             <DeviceSelectionProvider>
-//                 <AppContent {...props} />
-//             </DeviceSelectionProvider>
-//         </MediaStreamProvider>
-//     );
+// export default function App({ Component, pageProps }: AppPropsWithLayout) {
+//   // Use the layout defined at the page level, if available
+//   const Layout = Component.Layout ?? (({ children }) => <>{children}</>);
+  
+//   return (
+//     <Layout>
+//       <Component {...pageProps} />
+//     </Layout>
+//   );
 // }
-export default function App(props: AppProps) {
-
-    
-    return (
-        <DeviceSelectionProvider>
-            <LiveKitProvider>
-                <AppContent {...props} />
-            </LiveKitProvider>
-        </DeviceSelectionProvider>
-
-    );
-}

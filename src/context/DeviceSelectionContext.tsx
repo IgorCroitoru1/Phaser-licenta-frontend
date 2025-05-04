@@ -1,3 +1,4 @@
+"use client"
 import { LocalAudioTrack, LocalVideoTrack } from "livekit-client";
 import { createContext, useContext, useState, useEffect } from "react";
 

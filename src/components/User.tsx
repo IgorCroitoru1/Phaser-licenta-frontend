@@ -1,6 +1,6 @@
 'use client';
 import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
-import { VideoTrack, TrackReferenceOrPlaceholder } from '@livekit/components-react';
+import { VideoTrack, TrackReferenceOrPlaceholder, useIsSpeaking, useEnsureTrackRef, AudioTrack, ParticipantTile } from '@livekit/components-react';
 import GameConfig from '../../game-config';
 import { ChannelUser } from '@/user/ChannelUser';
 import { useChannelStore, userPositionSelector } from '@/store/useChannelStore';
@@ -11,10 +11,18 @@ interface UserProps {
   trackRef: TrackReferenceOrPlaceholder | null;
   user: ChannelUser;
 }
-
+function useSafeEnsureTrackRef(trackRef: TrackReferenceOrPlaceholder | null) {
+  try {
+    return trackRef ? useEnsureTrackRef(trackRef) : null;
+  } catch (error) {
+    console.warn('Failed to ensure track reference:', error);
+    return null;
+  }
+}
 const User = forwardRef<HTMLDivElement, UserProps>(({ trackRef, user }, externalRef) => {
   const internalRef = useRef<HTMLDivElement>(null);
   const ref = externalRef ?? internalRef;
+  const isSpeaking = trackRef ? useIsSpeaking(trackRef.participant) : false;
   const [translate, setTranslate] = useState('');
   // const camera = useChannelStore(state => state.camera);
   // const player = useChannelStore((state) => state.users.get(user.id));
@@ -66,7 +74,8 @@ const User = forwardRef<HTMLDivElement, UserProps>(({ trackRef, user }, external
       }}
     >
       {/* Video or Avatar Container */}
-      <div className="relative w-full h-full rounded-2xl overflow-hidden">
+      {/* <ParticipantTile></ParticipantTile> */}
+      <div className={`relative w-full h-full rounded-2xl overflow-hidden ${isSpeaking ? 'ring ring-green-400' : ''}`}>
         {isVideoActive ? (
           <VideoTrack
             trackRef={trackRef}
@@ -85,6 +94,7 @@ const User = forwardRef<HTMLDivElement, UserProps>(({ trackRef, user }, external
             {user.name}
           </div>
         )}
+        {/* <AudioTrack></AudioTrack> */}
       </div>
 
       {/* Name Badge */}

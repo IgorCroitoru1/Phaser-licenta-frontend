@@ -47,6 +47,7 @@ type GameState = {
   loaded: boolean;
   sceneLoaded: boolean;
 
+  userZones: Map<string, number>;
   // camera: {
   //   zoom: number;
   //   worldX: number;
@@ -71,6 +72,10 @@ type ChannelActions = {
   updateUser: (id: string, update: Partial<ChannelUser>) => void;
   updateUserPosition: (id: string, x: number, y: number) => void;
   updateAllPositions: (updates: Array<{ id: string; x: number; y: number }>) => void;
+
+  updateUserZone: (userId: string, zoneId: number) => void;
+
+
   // Device
   // setVideoTrack: (track: LocalVideoTrack | null) => void;
   // setAudioTrack: (track: LocalAudioTrack | null) => void;
@@ -118,7 +123,8 @@ export const useChannelStore = create<ChannelStore>()(
     users: new Map(),
     localUser: null,
     remoteUsers: new Map(),
-
+    userZones: new Map(),
+    
     // videoTrack: null,
     // audioTrack: null,
     // cameraId: null,
@@ -133,11 +139,16 @@ export const useChannelStore = create<ChannelStore>()(
     setActiveChannel: (channel) => set({ activeChannel: channel }),
     switchChannel: async () => false,
     setSwitchCannel: (fn) => set({ switchChannel: fn }),
-
+    updateUserZone: (userId, zoneId) => set((state) => {
+      const newMap = new Map(state.userZones);
+      newMap.set(userId, zoneId);
+      return { userZones: newMap };
+    }),
     clear: () =>
       set((state) => {
         state.activeChannel = null;
         state.users.clear();
+        state.userZones.clear();
         // state.videoTrack = null;
         // state.audioTrack = null;
         // state.cameraId = null;

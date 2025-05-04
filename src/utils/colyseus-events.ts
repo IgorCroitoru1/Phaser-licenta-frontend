@@ -7,5 +7,6 @@ export interface ColyseusEventPayloads {
   [GameEvents.DOOR_TRIGGER]: { doorId: number };
   [GameEvents.PLAYER_JOINED]:  ChannelUserDto ;
   [GameEvents.CURRENT_ZONE]: { zoneId: number };
+  [GameEvents.INIT_USERS]: ChannelUserDto[];
 }
 

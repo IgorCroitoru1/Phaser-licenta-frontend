@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Client, Room } from "colyseus.js";
+import { Client, Room, ServerError } from "colyseus.js";
 import { RoomState } from "@/components/ChannelManager";
 import GameConfig from "../../game-config";
 import toast from "react-hot-toast";
@@ -7,9 +7,11 @@ import { GameEvents } from "@/game/common/common";
 import { ColyseusEventPayloads } from "@/utils/colyseus-events";
 import { ChannelUser } from "@/user/ChannelUser";
 import { useChannelStore } from "@/store/useChannelStore";
+import { authService } from "@/services/auth";
+import { useAuthStore } from "@/store/useAuthStore";
 export type GameRoomOptions = {
     mapId: string;
-    token: string
+    token: string | null
   }
 
 export function useColyseus() {
@@ -27,39 +29,64 @@ export function useColyseus() {
         }
     }, []);
 
-    // ✅ Join or Switch Room
-    const joinRoom = useCallback(async (roomName: string, options: GameRoomOptions) => {
+    const joinRoom = useCallback(async (roomName: string, options: GameRoomOptions, retryCount = 0) => {
         if (!clientRef.current) return;
-        if (room && room.name === roomName) return; // Prevent rejoining same room
-
+        if (room && room.name === roomName) return;
+    
         setIsConnecting(true);
         setJoinError(false);
-
+    
         try {
             console.log(`🔗 Joining room: ${roomName}...`);
             const newRoom = await clientRef.current.joinOrCreate<RoomState>(roomName, options);
             console.log("✅ Joined room:", newRoom.name);
-              
+            
             const onPlayerJoined = (user: ColyseusEventPayloads[GameEvents.PLAYER_JOINED]) => {
                 const channelUser = new ChannelUser(user);
-                channelUser.isLocal = newRoom.sessionId === user.colyseusId;
+                console.log("User joined:", channelUser);
+                const storedUser = useAuthStore.getState().user;
+                channelUser.isLocal = storedUser?.id === user.id;
                 addUser(channelUser);
             }
+            
             setRoom(newRoom);
             setIsConnected(true);
-
-          
+            newRoom.onMessage(GameEvents.INIT_USERS, (users: ColyseusEventPayloads[GameEvents.INIT_USERS]) => {
+                users.map((user) => {
+                    addUser(new ChannelUser(user));
+                })
+            })
             newRoom.onMessage(GameEvents.PLAYER_JOINED, onPlayerJoined);
             newRoom.onLeave((room, reason) => {
                 console.log("❌ Room Disconnected. Reason:", reason);
                 setIsConnected(false);
                 setRoom(null);
             });
+            
             newRoom.onError((code, message) => {
                 console.error("❌ Room Error:", code, message);
             });
+    
         } catch (error) {
-            toast.error("A aparut o eroare la conectare. Vă rugăm să încercați din nou.");
+            console.error("❌ Error joining room:", error);
+            
+            // Handle authentication failure
+            if (error instanceof Error && error.message === "onAuth failed" && retryCount < 1) {
+                try {
+                    console.log("🔄 Attempting to refresh tokens...");
+                    await authService.refreshCredentials();
+                    console.log("✅ Tokens refreshed, retrying join...");
+                    return joinRoom(roomName, options, retryCount + 1);
+                } catch (refreshError) {
+                    console.error("❌ Token refresh failed:", refreshError);
+                    toast.error("Session expired. Please log in again.");
+                    // Optional: redirect to login or show login modal
+                    // navigate('/login');
+                }
+            } else {
+                toast.error("A apărut o eroare la conectare. Vă rugăm să încercați din nou.");
+            }
+            
             setJoinError(true);
         } finally {
             setIsConnecting(false);

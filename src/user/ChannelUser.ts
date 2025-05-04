@@ -3,7 +3,6 @@ import { ChannelUserDto } from "@/dtos/ChannelUserDto";
 
 export class ChannelUser {
   id: string;
-  colyseusId: string;   
   x: number;
   y: number;
   currentZoneId: number = -1;
@@ -13,7 +12,6 @@ export class ChannelUser {
   isLocal: boolean = false;
   constructor(userDto: ChannelUserDto){
     this.id = userDto.id;
-    this.colyseusId = userDto.colyseusId;
     this.x = userDto.x;
     this.y = userDto.y;
     this.currentZoneId = userDto.currentZoneId;

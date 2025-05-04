@@ -12,9 +12,9 @@ import toast from "react-hot-toast";
 import throttle from "lodash.throttle";
 import { Channel, useChannelStore } from "@/store/useChannelStore";
 import { ChannelUser } from "@/user/ChannelUser";
-import { TEMP_USER_ID } from "../../config";
 import { userRefsManager } from "@/user/UserRefsManager";
 import { GameEventPayloads } from "@/game/Events";
+import { useAuthStore } from "@/store/useAuthStore";
 // constsceneRegistry = new Map<string, typeof Phaser.Scene>();
 // sceneRegistry.set("TestScene", TestScene);
 // sceneRegistry.set("MainMenu", MainMenu);
@@ -47,11 +47,17 @@ export class RoomState extends Schema {
     @type({ map: Player }) players = new MapSchema<Player>();
     @type({ map: Zone }) zones = new MapSchema<Zone>();
     @type({ map: Door }) doors = new MapSchema<Door>();
+
+    onUncaughtException (err: Error, methodName: string) {
+        console.error("An error ocurred in", methodName, ":", err);
+        err.cause // original unhandled error
+        err.message // original error message
+    }
   }
 export const ChannelManager = () => {
     const phaserRef = useRef<IRefPhaserGame>(null);
     const sceneLoaded = useChannelStore((state) => state.sceneLoaded);
-    
+    const user = useAuthStore((state) => state.user);
     const updateUserPosition = useChannelStore((state) => state.updateUserPosition);
     const removeUser = useChannelStore((state) => state.removeUser);
     const isGameLoaded = useChannelStore((state) => state.loaded);
@@ -85,11 +91,11 @@ export const ChannelManager = () => {
             //game.scene.start(currentSceneKey, { cfg: {name: newMapName} });
             console.log("Scene added and started");
        
-    
+        const currentToken = useAuthStore.getState().accessToken;
         try {
             await joinRoom(channel.colyseusRoomName, {
                 mapId: channel.mapName,
-                token: GameConfig.TEMP_TOKEN,
+                token: currentToken,
             });
             setActiveChannel(channel)
         } catch (error) {
@@ -193,9 +199,9 @@ export const ChannelManager = () => {
                 );
                 scene.updatePlayer(id, player.x, player.y);
                 //userRefsManager.updateWorldPosition(id, player.x, player.y);
-
             });
-            scene.addPlayer(id, id === TEMP_USER_ID, player.x, player.y);
+            console.log("Player.id", player.id, user?.id);
+            scene.addPlayer(id, id === user?.id, player.x, player.y);
             console.log(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`)
             toast(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`);
 
@@ -204,7 +210,7 @@ export const ChannelManager = () => {
         $(room.state).players.onRemove((player, id) => {
             console.log("Player left:", id);
             removeUser(player.id);
-            scene.removePlayer(id, id === TEMP_USER_ID);
+            scene.removePlayer(id);
             toast(`Utilizatorul ${id} s-a deconectat!`);
 
         });
@@ -237,6 +243,7 @@ export const ChannelManager = () => {
     }, [sceneLoaded, room]);
 
         useEffect(() => {
+            console.log(user)
             return () => {
                 const isMySceneActive = phaserRef.current?.game?.scene.isActive("MyScene");
                 if(isMySceneActive) {

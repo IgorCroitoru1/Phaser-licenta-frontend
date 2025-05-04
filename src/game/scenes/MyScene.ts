@@ -136,7 +136,7 @@ export class MyScene extends Phaser.Scene {
         })
        
         this.scale.on(Phaser.Scale.Events.RESIZE, () => {
-            this.onResize();
+           // this.onResize();
         }
 
         )
@@ -654,15 +654,15 @@ export class MyScene extends Phaser.Scene {
     addPlayer(
         id: string,
         localPlayer: boolean,
-        x: number = 700,
-        y: number = 1030
+        x: number ,
+        y: number 
     ) {
        
 
         if (localPlayer) {
             this._player = new Player({
                 scene: this,
-                position: { x: this.scale.width / 2, y: this.scale.height / 2 },
+                position: { x, y },
                 isLocal: localPlayer,
                 playerId: id,
             });
@@ -686,7 +686,6 @@ export class MyScene extends Phaser.Scene {
                     isLocal: false,
                     playerId: id,
                 });
-                console.log(player);
                 this.networkPlayers.set(id, player);
                
                 this.physics.add.collider(player, this.collisionLayer);
@@ -714,9 +713,9 @@ export class MyScene extends Phaser.Scene {
           y})
     }
 
-    removePlayer(id: string, localPlayer: boolean) {
-        if (localPlayer) {
-            this._player?.destroy();
+    removePlayer(id: string) {
+        if (this._player && this._player.id === id) {
+            this._player.destroy();
         } else {
             const sprite = this.networkPlayers.get(id);
             if (sprite) {
