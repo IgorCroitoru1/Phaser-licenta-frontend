@@ -39,7 +39,7 @@ export function useColyseus() {
         try {
             console.log(`🔗 Joining room: ${roomName}...`);
             const newRoom = await clientRef.current.joinOrCreate<RoomState>(roomName, options);
-            console.log("✅ Joined room:", newRoom.name);
+            console.log("✅ Joined room:", newRoom.name, newRoom.roomId);
             
             const onPlayerJoined = (user: ColyseusEventPayloads[GameEvents.PLAYER_JOINED]) => {
                 const channelUser = new ChannelUser(user);
@@ -47,6 +47,7 @@ export function useColyseus() {
                 const storedUser = useAuthStore.getState().user;
                 channelUser.isLocal = storedUser?.id === user.id;
                 addUser(channelUser);
+                toast(`Utilizatorul ${channelUser.name || channelUser.email} s-a alăturat`)
             }
             
             setRoom(newRoom);
@@ -66,6 +67,10 @@ export function useColyseus() {
             newRoom.onError((code, message) => {
                 console.error("❌ Room Error:", code, message);
             });
+
+            newRoom.onMessage("players_data", (players) => {
+                console.log("Received players:", players);
+              });
     
         } catch (error) {
             console.error("❌ Error joining room:", error);

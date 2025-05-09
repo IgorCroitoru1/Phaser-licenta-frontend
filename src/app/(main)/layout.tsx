@@ -7,10 +7,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <WithProvidersLayout>
       <div className="flex h-screen">
-        <div className="w-64 bg-gray-800 text-white">
+        <div className="w-60 bg-gray-800 text-white">
           <ServerSidebar />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 relative">
           {children}
         </div>
       </div>

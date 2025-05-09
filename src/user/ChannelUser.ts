@@ -3,8 +3,8 @@ import { ChannelUserDto } from "@/dtos/ChannelUserDto";
 
 export class ChannelUser {
   id: string;
-  x: number;
-  y: number;
+  // x: number;
+  // y: number;
   currentZoneId: number = -1;
   email: string;
   name: string;
@@ -12,8 +12,8 @@ export class ChannelUser {
   isLocal: boolean = false;
   constructor(userDto: ChannelUserDto){
     this.id = userDto.id;
-    this.x = userDto.x;
-    this.y = userDto.y;
+    // this.x = userDto.x;
+    // this.y = userDto.y;
     this.currentZoneId = userDto.currentZoneId;
     this.email = userDto.email;
     this.name = userDto.name;

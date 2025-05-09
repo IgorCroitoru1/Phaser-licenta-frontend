@@ -1,0 +1,105 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    border-radius: var(--radius);
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+  
+    &:not(:disabled):hover {
+      background-color: color-mix(in srgb, var(--color-zinc-200), transparent 10%);
+    }
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-zinc-200), transparent 10%);
+    }
+    &:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  
+    /* Variants */
+    &.default {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      box-shadow: var(--shadow-xs);
+  
+      &:hover {
+        background-color: color-mix(in srgb, var(--primary), transparent 10%);
+      }
+    }
+  
+    &.destructive {
+      background-color: var(--destructive);
+      color: white;
+      box-shadow: var(--shadow-xs);
+  
+      &:hover {
+        background-color: color-mix(in srgb, var(--destructive), transparent 10%);
+      }
+    }
+  
+    /* Add other variants (outline, secondary, ghost, link) similarly... */
+  
+    /* Active/pressed state */
+    &[aria-pressed='true'] {
+      // background-color: var(--control-active-bg);
+      // border-radius: 1px;
+      // border-color: var(--primary) ;
+  
+      &:hover {
+        background-color: var(--control-active-hover-bg);
+      }
+    }
+  
+    /* Screen share active state */
+    &[data-source='screen_share'][data-enabled='true'] {
+      background-color: var(--accent-bg);
+      
+      &:hover {
+        background-color: var(--accent2);
+      }
+    }
+  
+    /* Menu indicator (dropdown arrow) */
+    &.menu::after {
+      content: '';
+      display: inline-block;
+      width: 0.5em;
+      height: 0.5em;
+      margin-left: 0.5rem;
+      border-left: 0.125em solid currentColor;
+      border-bottom: 0.125em solid currentColor;
+      transform: rotate(-45deg);
+      transform-origin: center center;
+    }
+  }
+  
+  /* Button group styles */
+  .buttonGroup {
+    display: inline-flex;
+    align-items: stretch;
+    height: 100%;
+  
+    & > .button:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+  
+  .buttonGroupMenu {
+    position: relative;
+    flex-shrink: 0;
+  
+    & > .button {
+      height: 100%;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }

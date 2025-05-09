@@ -37,12 +37,13 @@ export class Player extends CharacterGameObject {
   
       if (this._isLocal) {
         this._cursors = config.scene.input.keyboard?.createCursorKeys();
-        this.setTint(0x00ff00); // Green tint for local player
+        // this.setTint(0x00ff00); // Green tint for local player
       } else {
-        this.setTint(0xff0000); // Red tint for network players
+        // this.setTint(0xff0000); // Red tint for network players
       }
     this.setupPhysics();
     this.setDepth(100);
+    //this.setVisible(false);
     // add components
     this._collidingObjectsComponent = new CollidingObjectsComponent(this);
 

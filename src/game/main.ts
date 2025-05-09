@@ -9,8 +9,9 @@ import { MyScene } from './scenes/MyScene';
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
-    width: window.innerWidth,  // Use full window width
-    height: window.innerHeight, // Use full window height
+   // width: "100%",  // Use full window width
+    //height: "100%", // Use full window height
+    
     parent: 'game-container',
     backgroundColor: '#213433',
     scene: [
@@ -22,7 +23,7 @@ const config: Phaser.Types.Core.GameConfig = {
     ],
     scale: {
         mode: Phaser.Scale.RESIZE, // ✅ Makes game resize automatically
-       // autoCenter: Phaser.Scale.CENTER_BOTH, // ✅ Centers the game
+        //autoCenter: Phaser.Scale.CENTER_BOTH, // ✅ Centers the game
     },
    
     // fps:{
@@ -32,8 +33,9 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const StartGame = (parent: string) => {
-    config.width = window.innerWidth;
-    config.height = window.innerHeight;
+    // config.width = window.innerWidth;
+    // config.height = window.innerHeight;
+    console.log("Windows innerWidth", window.innerWidth);
     const game = new Game({ ...config, parent });
     // window.addEventListener('resize', () => {
     //     game.scale.resize(window.innerWidth, window.innerHeight);

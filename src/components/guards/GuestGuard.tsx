@@ -12,9 +12,10 @@ export default function GuestGuard({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!isAuthLoading && accessToken) {
       const redirectTo = searchParams?.get("from") || "/"
+      console.log("Access token found, redirecting to home page", redirectTo)
       router.replace(redirectTo)
     }
-  }, [accessToken, isAuthLoading, router, searchParams])
+  }, [accessToken, isAuthLoading, router])
 
 //   if (isAuthLoading) {
 //     return (
@@ -24,7 +25,28 @@ export default function GuestGuard({ children }: { children: React.ReactNode }) 
 //     )
 //   }
 
-    if (accessToken) return <></>
+    if (accessToken) return null
 
   return <>{children}</>
 }
+// 'use client'
+
+// import { useEffect } from 'react'
+// import { useAuthStore } from '@/store/useAuthStore'
+// import { useRouter } from 'next/navigation'
+
+// export default function GuestGuard({ children }: { children: React.ReactNode }) {
+//   const { accessToken, isAuthLoading } = useAuthStore()
+//   const router = useRouter()
+
+//   useEffect(() => {
+//     if (!isAuthLoading && accessToken) {
+//       console.log("Access token found, redirecting to home page")
+//       router.replace('/') // or use searchParams.get("from")
+//     }
+//   }, [accessToken, isAuthLoading, router])
+
+//   if (isAuthLoading || accessToken) return null
+
+//   return <>{children}</>
+// }

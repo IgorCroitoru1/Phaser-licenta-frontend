@@ -1,0 +1,17 @@
+@use 'button' as btn;
+@import 'device-menu';
+[data-lk-theme="my-theme"] {
+    .lk-button {
+      @extend .button; // Inherit all base styles
+    }
+    .lk-device-menu {
+      @extend .device-menu; // Inherit all base styles
+    }
+    .lk-media-device-select {
+        @extend .media-device-select;
+      }
+    .lk-media-device-select [data-lk-active=true]>.lk-button {
+        border-width: 2px;
+        border-color: var(--primary);
+}
+}

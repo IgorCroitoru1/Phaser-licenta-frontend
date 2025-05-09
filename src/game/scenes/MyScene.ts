@@ -26,8 +26,8 @@ export class MyScene extends Phaser.Scene {
     private text: Phaser.GameObjects.Text;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     private map: Phaser.Tilemaps.Tilemap;
-    private graphics: Phaser.GameObjects.Graphics;
-    private debugGraphics: Phaser.GameObjects.Graphics;
+    // private graphics: Phaser.GameObjects.Graphics;
+    // private debugGraphics: Phaser.GameObjects.Graphics;
     private fog: Phaser.GameObjects.Graphics;
     private visionMask: Phaser.GameObjects.Graphics;
     private mask: Phaser.Display.Masks.GeometryMask;
@@ -53,7 +53,7 @@ export class MyScene extends Phaser.Scene {
     private collisionLayer: Phaser.Tilemaps.TilemapLayer;
     private closedDoorsGroup: Phaser.GameObjects.Group;
     constructor() {
-        super({ key: "MyScene", physics: { arcade: { debug: true } } });
+        super({ key: "MyScene", physics: { arcade: { debug: false } } });
     }
     init(data: { cfg: { name: string } }) {
         this.cfg = data.cfg;
@@ -98,7 +98,7 @@ export class MyScene extends Phaser.Scene {
         this.setupCameraDrag(this.cameras.main);
         this.setupCameraZoom(this.cameras.main);
         this.collisionLayer = this.createdLayers[TILED_LAYER_NAMES.COLLIDES];
-        this.collisionLayer.setAlpha(0.25);
+        this.collisionLayer.setAlpha(0);
         // console.log(getTilesetsUsedInLayer(this.map, 'background'))
         // console.log(this.map.tilesets)
         // console.log(this.map.getTileLayerNames())
@@ -136,7 +136,7 @@ export class MyScene extends Phaser.Scene {
         })
        
         this.scale.on(Phaser.Scale.Events.RESIZE, () => {
-           // this.onResize();
+        //    this.onResize();
         }
 
         )
@@ -190,34 +190,34 @@ export class MyScene extends Phaser.Scene {
             this.customEvents.emit(GameEvents.PLAYERS_POSITION_UPDATE, playersPositions);
         }
     }
-    private updateDebug() {
-        const camera = this.cameras.main;
-        const { scrollX, scrollY, worldView, zoom } = camera;
+    // private updateDebug() {
+    //     const camera = this.cameras.main;
+    //     const { scrollX, scrollY, worldView, zoom } = camera;
     
-        // Clear previous drawings
-        this.debugGraphics.clear();
+    //     // Clear previous drawings
+    //     this.debugGraphics.clear();
     
-        // 3. Draw camera center point (scrollX/Y)
-        this.debugGraphics.fillStyle(0xff0000, 1); // Red
-        this.debugGraphics.fillCircle(scrollX, scrollY, 10);
+    //     // 3. Draw camera center point (scrollX/Y)
+    //     this.debugGraphics.fillStyle(0xff0000, 1); // Red
+    //     this.debugGraphics.fillCircle(scrollX, scrollY, 10);
     
-        // 4. Draw worldView rectangle (visible area)
-        this.debugGraphics.lineStyle(2, 0x00ff00); // Green
-        this.debugGraphics.strokeRect(
-          worldView.x,
-          worldView.y,
-          worldView.width,
-          worldView.height
-        );
+    //     // 4. Draw worldView rectangle (visible area)
+    //     this.debugGraphics.lineStyle(2, 0x00ff00); // Green
+    //     this.debugGraphics.strokeRect(
+    //       worldView.x,
+    //       worldView.y,
+    //       worldView.width,
+    //       worldView.height
+    //     );
     
-        // 5. Update debug text
-        this.text.setText([
-          `ScrollX/Y: ${scrollX.toFixed(1)}, ${scrollY.toFixed(1)}`,
-          `WorldView: X=${worldView.x.toFixed(1)}, Y=${worldView.y.toFixed(1)}`,
-          `Zoom: ${zoom.toFixed(2)}`,
-          `Viewport: ${worldView.width.toFixed(0)}x${worldView.height.toFixed(0)}`
-        ]);
-      }
+    //     // 5. Update debug text
+    //     this.text.setText([
+    //       `ScrollX/Y: ${scrollX.toFixed(1)}, ${scrollY.toFixed(1)}`,
+    //       `WorldView: X=${worldView.x.toFixed(1)}, Y=${worldView.y.toFixed(1)}`,
+    //       `Zoom: ${zoom.toFixed(2)}`,
+    //       `Viewport: ${worldView.width.toFixed(0)}x${worldView.height.toFixed(0)}`
+    //     ]);
+    //   }
     private cameraChanged(): boolean {
         try{
             // const changed = (
@@ -429,7 +429,7 @@ export class MyScene extends Phaser.Scene {
     }
     public onResize() {
         const camera = this.cameras.main;
-        this.graphics?.clear();
+        // this.graphics?.clear();
         let calculatedBounds = this.calculateBounds(
             this.map.heightInPixels,
             this.map.widthInPixels
@@ -440,13 +440,13 @@ export class MyScene extends Phaser.Scene {
             calculatedBounds.width,
             calculatedBounds.height
         );
-        this.graphics?.lineStyle(2, 0xff0000, 1);
-        this.graphics?.strokeRect(
-            calculatedBounds.x,
-            calculatedBounds.y,
-            calculatedBounds.width,
-            calculatedBounds.height
-        );
+        // this.graphics?.lineStyle(2, 0xff0000, 1);
+        // this.graphics?.strokeRect(
+        //     calculatedBounds.x,
+        //     calculatedBounds.y,
+        //     calculatedBounds.width,
+        //     calculatedBounds.height
+        // );
 
         const worldCenterBefore = camera.getWorldPoint(
             camera.centerX,
@@ -470,6 +470,31 @@ export class MyScene extends Phaser.Scene {
         camera.scrollX += worldCenterBefore.x - worldCenterAfter.x;
         camera.scrollY += worldCenterBefore.y - worldCenterAfter.y;
     }
+    // onResize() {
+    //     const camera = this.cameras.main;
+    //     //this.graphics.clear();
+    //     let calculatedBounds = this.calculateBounds(this.map.heightInPixels, this.map.widthInPixels);
+    //     camera.setBounds(calculatedBounds.x, calculatedBounds.y, calculatedBounds.width, calculatedBounds.height);
+    //     //this.graphics.lineStyle(2, 0xff0000, 1);
+    //     //this.graphics.strokeRect(calculatedBounds.x, calculatedBounds.y, calculatedBounds.width, calculatedBounds.height,);
+    
+     
+    //     const worldCenterBefore = camera.getWorldPoint(camera.centerX, camera.centerY);
+    
+    //     // ✅ Get new scene dimensions
+    //     const sceneWidth = this.scale.width;
+    //     const sceneHeight = this.scale.height;
+    
+       
+    //     this.minZoom = this.scale.height / (this.map.heightInPixels * GameConfig.mapScaleY);
+    //     camera.zoom = this.minZoom;
+       
+    //     const worldCenterAfter = camera.getWorldPoint(sceneWidth / 2, sceneHeight / 2);
+    
+    //     // ✅ Adjust the camera scroll so the world point remains in the same place
+    //     camera.scrollX += worldCenterBefore.x - worldCenterAfter.x;
+    //     camera.scrollY += worldCenterBefore.y - worldCenterAfter.y;
+    // }
 
     private setupCameraDrag(camera: Phaser.Cameras.Scene2D.Camera): void {
         let cameraDragStartX: number;
@@ -590,10 +615,80 @@ export class MyScene extends Phaser.Scene {
         if (this.currentZoneId !== currentZone?.zone.id) {
             this.currentZoneId = currentZone?.zone.id;
             console.log("Player entered room:", this.currentZoneId);
+            this.customEvents.emit(GameEvents.CURRENT_ZONE, {zoneId: this.currentZoneId ?? -1});
+
         }
-        this.customEvents.emit(GameEvents.CURRENT_ZONE, {zoneId: this.currentZoneId ?? -1});
         
     }
+    // private updateFog(): void {
+    //     // Clear previous drawings
+    //     this.fog.clear();
+    //     this.fog.fillStyle(0x000000, 0.2);
+    //     this.fog.fillRect(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+        
+    //     this.visionMask.clear();
+    //     if (!this._player) return;
+    
+    //     // Create a temporary bitmap mask
+    //     // const maskTexture = this.visionMask
+    //     const ctx = this.visionMask
+    //     // Draw full vision circle (white = visible area)
+    //      ctx.fillStyle(0xffffff)
+    //     ctx.beginPath();
+    //     ctx.arc(
+    //         this._player.x, 
+    //         this._player.y, 
+    //         PLAYER_VISION_MASK_SIZE, 
+    //         0, 
+    //         Math.PI * 2
+    //     );
+    //     ctx.fill();
+        
+    //     // Cut out zones (black = masked areas)
+    //     ctx.fillStyle(0x000000);
+    //     Object.values(this.objectsByZoneId).forEach(zoneData => {
+    //         if (zoneData.zone.id === this.currentZoneId) {
+    //             const originY = zoneData.zoneObject.originY ?? 0;
+    //             const y = originY === 1 ? 
+    //                 zoneData.zoneObject.y - zoneData.zone.height : 
+    //                 zoneData.zoneObject.y;
+                    
+    //             ctx.fillRect(
+    //                 zoneData.zoneObject.x,
+    //                 y,
+    //                 zoneData.zone.width,
+    //                 zoneData.zone.height
+    //             );
+    //         } // Skip current zone
+            
+    //         // const originY = zoneData.zoneObject.originY ?? 0;
+    //         // const y = originY === 1 ? 
+    //         //     zoneData.zoneObject.y - zoneData.zone.height : 
+    //         //     zoneData.zoneObject.y;
+                
+    //         // ctx.fillRect(
+    //         //     zoneData.zoneObject.x,
+    //         //     y,
+    //         //     zoneData.zone.width,
+    //         //     zoneData.zone.height
+    //         // );
+    //     });
+        
+        // Update the texture
+        // maskTexture?.refresh();
+        
+        // // Apply as mask
+        // if (!this.visionMaskImage) {
+        //     this.visionMaskImage = this.add.image(0, 0, 'visionMask')
+        //         .setOrigin(0)
+        //         .setBlendMode(Phaser.BlendModes.SOURCE_IN);
+        // } else {
+        //     this.visionMaskImage.setTexture('visionMask');
+        // }
+        
+        // Handle proximity detection (from previous solution)
+        //this.updateProximityDetection();
+  //  }
     private updateFog(): void {
         this.fog.clear();
         this.fog.fillStyle(0x000000, 0.2);
@@ -628,7 +723,7 @@ export class MyScene extends Phaser.Scene {
                 this._player.y,
                 PLAYER_VISION_MASK_SIZE
             );
-            this.visionMask.fill;
+            // this.visionMask.fill();
         }
     }
 

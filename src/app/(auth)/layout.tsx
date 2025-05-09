@@ -15,11 +15,11 @@ export default function RootLayout({
   return (
     <>
         {/* <AuthInitializer /> */}
-        <AuthLoadingGate>
+        {/* <AuthLoadingGate> */}
           <GuestGuard>
           {children}
           </GuestGuard>
-        </AuthLoadingGate>
+        {/* </AuthLoadingGate> */}
     </>
 
   )

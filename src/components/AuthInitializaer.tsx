@@ -2,8 +2,8 @@
 
 import { authService } from '@/services/auth'
 import { useAuthStore } from '@/store/useAuthStore'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function AuthInitializer({ children }: { children: React.ReactNode }) {
   const {
@@ -16,41 +16,53 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
     setUser,
   } = useAuthStore()
 
+  const [canRender, setCanRender] = useState(false)
+
   const router = useRouter()
+  const publicRoutes = ['/login', '/register']
+  const pathname = usePathname()
 
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('Initializing auth...')
       setAuthLoading(true)
 
       try {
-        // Try to refresh access token if missing
+        // Refresh token if needed
         if (!accessToken) {
           await authService.refreshCredentials()
         }
 
-        // Fetch user if token exists but user not in store
+        // Fetch user if token exists but user not yet loaded
         if (!user && accessToken) {
           const fetchedUser = await authService.getUser()
           setUser(fetchedUser)
         }
 
+        setCanRender(true)
+
       } catch (error) {
-        console.error('Authentication initialization failed:', error)
+        console.error('Auth init failed:', error)
         await authService.logout()
         logout()
-        router.push('/login')
+        if (pathname && !publicRoutes.includes(pathname)) {
+          router.replace('/login') // 🚫 replace prevents back button flash
+        } else {
+          setCanRender(true)
+        }
       } finally {
         setAuthLoading(false)
       }
     }
 
     initializeAuth()
-  }, [accessToken, user, login, logout, setAuthLoading, setUser, router])
+  }, [accessToken, user, login, logout, setUser, router, pathname])
 
-  if (isAuthLoading) {
+  // 💡 Prevent any child rendering until decision is made
+  if (!canRender) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="w-screen h-screen flex items-center justify-center">
+        <span className="text-muted-foreground animate-pulse">Loading auth...</span>
       </div>
     )
   }

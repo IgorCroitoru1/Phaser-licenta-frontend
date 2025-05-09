@@ -2,7 +2,7 @@ import { IRefPhaserGame, PhaserGame } from "@/game/PhaserGame"
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { useRef, useState, useEffect, useCallback } from "react";
 import GameConfig from "../../game-config";
-import { MapSchema, Schema, type } from "@colyseus/schema";
+import { ArraySchema, MapSchema, Schema, type } from "@colyseus/schema";
 import { useColyseus } from "@/hooks/useColyseus";
 import { MyScene } from "@/game/scenes/MyScene";
 import { GameEvents } from "@/game/common/common";
@@ -15,6 +15,9 @@ import { ChannelUser } from "@/user/ChannelUser";
 import { userRefsManager } from "@/user/UserRefsManager";
 import { GameEventPayloads } from "@/game/Events";
 import { useAuthStore } from "@/store/useAuthStore";
+import { set } from "react-hook-form";
+import { use } from "matter";
+import { Button } from "./ui/custom_button";
 // constsceneRegistry = new Map<string, typeof Phaser.Scene>();
 // sceneRegistry.set("TestScene", TestScene);
 // sceneRegistry.set("MainMenu", MainMenu);
@@ -25,12 +28,16 @@ import { useAuthStore } from "@/store/useAuthStore";
 //     @type("number") y: number ;
 //     @type("number") currentZoneId: number = -1;
 // }
+
 export class Player extends Schema {
-    @type("string") id: string;
-    @type("number") x: number;
-    @type("number") y: number;
-    @type("number") currentZoneId: number = -1;
-  }
+  @type("string") id: string;
+  @type("number") x: number;
+  @type("number") y: number;
+  @type("number") currentZoneId: number = -1;
+
+  @type([ "string" ]) nearbyUsers = new ArraySchema<string>();
+}
+
   
 export class Zone extends Schema {
     @type("number") id: number;
@@ -58,17 +65,11 @@ export const ChannelManager = () => {
     const phaserRef = useRef<IRefPhaserGame>(null);
     const sceneLoaded = useChannelStore((state) => state.sceneLoaded);
     const user = useAuthStore((state) => state.user);
-    const updateUserPosition = useChannelStore((state) => state.updateUserPosition);
-    const removeUser = useChannelStore((state) => state.removeUser);
     const isGameLoaded = useChannelStore((state) => state.loaded);
     const { room, isConnected, joinRoom, leaveRoom } = useColyseus();
-    const setSwitchChannel = useChannelStore((state) => state.setSwitchCannel);
-    const setSceneLoaded = useChannelStore((state) => state.setSceneLoaded);
-    const setActiveChannel = useChannelStore((state) => state.setActiveChannel);
-    const clear = useChannelStore((state) => state.clear);
     const switchChannel = useCallback(async (channel: Channel): Promise<boolean> => {
         console.log("Switching channel");
-        clear();
+        useChannelStore.getState().clear();
         const game = phaserRef.current?.game;
         if (!game) return false;
     
@@ -83,7 +84,7 @@ export const ChannelManager = () => {
         if (existingScene) {
             game.scene.stop(currentSceneKey);
             game.scene.remove(currentSceneKey);
-            setSceneLoaded(false);
+            useChannelStore.getState().setSceneLoaded(false);
             console.log("Scene stopped and removed");
         }
             const myScene = new MyScene(); // You might want to pass config her
@@ -97,7 +98,7 @@ export const ChannelManager = () => {
                 mapId: channel.mapName,
                 token: currentToken,
             });
-            setActiveChannel(channel)
+            useChannelStore.getState().setActiveChannel(channel)
         } catch (error) {
             console.error("Failed to join room:", error);
             return false;
@@ -125,7 +126,7 @@ export const ChannelManager = () => {
     
 
     useEffect(() => {
-        setSwitchChannel(switchChannel);
+        useChannelStore.getState().setSwitchCannel(switchChannel);
     }, [switchChannel]);
     useEffect(() => {
        console.log("Switch scene recreatedd")
@@ -192,33 +193,63 @@ export const ChannelManager = () => {
         const $ = getStateCallbacks(room);
        
         $(room.state).players.onAdd((player, id) => {
+            console.log("Player joined:", id, player);
             $(player).onChange(() => {
-                updateUserPosition(id, 
-                    player.x,
-                    player.y,
-                );
+                // useChannelStore.getState().updateUserPosition(id, 
+                //     player.x,
+                //     player.y,
+                // );
                 scene.updatePlayer(id, player.x, player.y);
                 //userRefsManager.updateWorldPosition(id, player.x, player.y);
             });
+            $(player).listen("currentZoneId", (val, prevVal) => {
+                console.log("Player zone updated:", player.id, val, prevVal);
+                useChannelStore.getState().updateUserZone(player.id, val);
+                // scene.setPlayerZone(id, val);
+            })
+            // $(player).nearbyUsers.onChange((val, prevVal) => {
+            //     useChannelStore.getState().setDebugNearbyUsers(player.id, player.nearbyUsers.toArray())
+            // })
+            $(player).nearbyUsers.onAdd((userId, index) => {
+                //console.log("Added new near for user:", player.id, userId);
+                if(user?.id === player.id) {
+                    useChannelStore.getState().setNearbyUser(userId);
+                    //console.log("Player nearby user added:" ,userId);
+                }
+               
+            })
+            $(player).nearbyUsers.onRemove((userId, index) => {
+                if(user?.id === player.id) {
+                useChannelStore.getState().removeNearbyUser(userId);
+                }
+                // console.log("Player nearby user removed:" ,userId);
+            })
+            $(player).listen("nearbyUsers", (val, prevVal) => {
+                // console.log("Player nearby users updated:", player.id, val);
+                useChannelStore.getState().updateNearbyUsers(val.toArray());
+            })
             console.log("Player.id", player.id, user?.id);
             scene.addPlayer(id, id === user?.id, player.x, player.y);
             console.log(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`)
-            toast(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`);
+            // toast(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`);
 
         });
 
         $(room.state).players.onRemove((player, id) => {
             console.log("Player left:", id);
-            removeUser(player.id);
+            useChannelStore.getState().removeUser(player.id);
+            const user = useChannelStore.getState().users.get(id)
             scene.removePlayer(id);
-            toast(`Utilizatorul ${id} s-a deconectat!`);
+            toast(`Utilizatorul ${user?.name} s-a deconectat!`);
 
         });
 
         $(room.state).zones.onAdd((zone, id) => {
+            useChannelStore.getState().setZoneState(zone.id, zone.isOpen);
             $(zone).listen("isOpen",(val, prevVal) => {
                 console.log("Zone updated:", zone.id, val, prevVal);
                 scene.setZoneState(zone.id, val)
+                useChannelStore.getState().setZoneState(zone.id, val);
             })
            
 
@@ -245,6 +276,8 @@ export const ChannelManager = () => {
         useEffect(() => {
             console.log(user)
             return () => {
+                useChannelStore.getState().clear();
+                // userRefsManager
                 const isMySceneActive = phaserRef.current?.game?.scene.isActive("MyScene");
                 if(isMySceneActive) {
                     console.log("👋 Cleaning up MySceneeeeeee");
@@ -254,8 +287,18 @@ export const ChannelManager = () => {
             }
         },[])
         return (
-        
+
+            // {/* <Button onClick={()=>{
+            //     console.log("Sending get_data message to room")
+            //     console.log("room", room?.state.players.forEach((player, id) => {
+            //         console.log("Player ID:", id, "Player Data:", player.nearbyUsers.toArray());
+            //     }))
+            //     // room?.send('get_data', { userId: "123" });
+            //     }}>
+            //     Get data
+            //   </Button> */}
             <PhaserGame ref={phaserRef}/>
+
        
     );
 };

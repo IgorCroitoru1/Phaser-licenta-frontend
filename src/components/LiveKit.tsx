@@ -1,4 +1,5 @@
 'use client';
+import { ControlBar as CustomControlBar } from './liivekit/ControlBar';
 import {
   ControlBar,
   GridLayout,
@@ -59,7 +60,6 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
         await roomInstance.connect(LIVEKIT_URL, token, {
           
         });
-
         roomInstance.on("localTrackPublished", (track) => {
           console.log("Local track published", track);
         })
@@ -152,11 +152,7 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <RoomContext.Provider value={roomInstance}>
-       <div data-lk-theme="default">
-      {/* <MyVideoConference/> */}
-      <ControlBar/>
-      <RoomAudioRenderer/>
-       </div>
+       
       {children}
     </RoomContext.Provider>
   );

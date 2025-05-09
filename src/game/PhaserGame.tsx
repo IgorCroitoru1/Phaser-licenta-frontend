@@ -14,8 +14,7 @@ import { ParticipantTile, TrackLoop, useTracks } from '@livekit/components-react
 import { Track } from 'livekit-client';
 import PlayerVideo from '@/components/ui/Player2';
 import { useChannelStore } from '@/store/useChannelStore';
-import User from '@/components/User';
-import { UserRenderer } from '@/components/UserRenderer';
+import { UserRenderer } from '@/components/User/UserRenderer';
 
 export interface IRefPhaserGame {
     game: Phaser.Game | null;
@@ -62,30 +61,31 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
         };
     }, [ref]);
 
-    // useEffect(() => {
-    //     if (!containerRef.current) return;
-    //     // Create a ResizeObserver to watch for changes
-    //     const observer = new ResizeObserver((entries) => {
-    //         if(game.current)
-    //         { 
-    //             for (let entry of entries) {
-    //             if (entry.contentRect.width === 0 || entry.contentRect.height === 0) { 
-    //                 console.log("ResizeObserver: width or height is 0, skipping resize");
-    //                 return
-    //             };
-    //             if (currentSceneRef.current && currentSceneRef.current instanceof MyScene ) {
-    //                 currentSceneRef.current.onResize();
-    //             }
-    //         }
+    useEffect(() => {
+        if (!containerRef.current) return;
+        // Create a ResizeObserver to watch for change
+        const observer = new ResizeObserver((entries) => {
+            if(game.current)
+            { 
+                for (let entry of entries) {
+                if (entry.contentRect.width === 0 || entry.contentRect.height === 0) { 
+                    console.log("ResizeObserver: width or height is 0, skipping resize");
+                    return
+                };
+                if (currentSceneRef.current && currentSceneRef.current instanceof MyScene ) {
+                    console.log("ResizeObserver: MyScene onResize called");
+                    currentSceneRef.current.onResize();
+                }
+            }
 
-    //         }
+            }
            
-    //     });
+        });
 
-    //     observer.observe(containerRef.current);
+        observer.observe(containerRef.current);
 
-    //     return () => observer.disconnect(); // Cleanup observer on unmount
-    // },[]);
+        return () => observer.disconnect(); // Cleanup observer on unmount
+    },[]);
 
     useEffect(() => {
         const onSceneReady = (scene_instance: Phaser.Scene) => {
@@ -112,7 +112,8 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
         };
     }, [currentActiveScene, ref]);
     return (
-        <div ref={containerRef} id="game-container" style={{position: 'relative', width: '100%', height: '100%', minHeight: '50px', minWidth: '50px'}}>
+        <div ref={containerRef} id="game-container"
+             style={{position:"absolute", top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', minWidth: '100px', minHeight: '100px', backgroundColor: '#213433'}}>
           <UserRenderer/>
             {/* {tracks.map((trackRef) => (
                 <ParticipantTile key={trackRef.participant.identity} trackRef={trackRef}/>

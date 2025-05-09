@@ -34,6 +34,7 @@
   --chart-3: hsl(197 37% 24%);
   --chart-4: hsl(43 74% 66%);
   --chart-5: hsl(27 87% 67%);
+  --zinc-10: hsla(240, 3%, 27%, 0.1);
 }
 
 .dark {
@@ -87,7 +88,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
+  --color-zinc-10: var(--zinc-10);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -131,3 +132,22 @@ html, body {
   height: 100vh;
   overflow: hidden;  /* Hides any overflowing game content */
 }
+
+/* 
+[data-lk-theme="my-theme"] .lk-button {
+   position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    color: var(--color-primary);
+    background-color: var(--control-primary);
+    border: 0;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s, background-color 0.2s, box-shadow 0.2s; */
+/* } */

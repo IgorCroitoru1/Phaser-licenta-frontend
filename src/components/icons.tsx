@@ -13,6 +13,8 @@ import {
     Laptop,
     Loader2,
     LucideProps,
+    Mic,
+    MicOff,
     Moon,
     MoreVertical,
     Pizza,
@@ -23,12 +25,15 @@ import {
     Twitter,
     User,
     X,
+    
     type Icon as LucideIcon,
   } from "lucide-react"
   
   export type Icon = typeof LucideIcon
   
   export const Icons = {
+    mic: Mic,
+    micOff: MicOff,
     logo: Command,
     close: X,
     spinner: Loader2,
