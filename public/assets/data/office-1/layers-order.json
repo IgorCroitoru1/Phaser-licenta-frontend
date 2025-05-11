@@ -4,6 +4,7 @@
       "foreground",
       "zones",
       "zones/1/door",
+      "zones/2/door",
       "zones/door-foreground",
       "collides"
     ]

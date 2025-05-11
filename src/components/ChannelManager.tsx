@@ -161,7 +161,7 @@ export const ChannelManager = () => {
         };
         
         const onDoorTrigger = (payload: ColyseusEventPayloads[GameEvents.DOOR_TRIGGER]) => {
-            sendRoomEvent(room, GameEvents.DOOR_TRIGGER, { doorId: payload.doorId });
+            sendRoomEvent(room, GameEvents.DOOR_TRIGGER, { zoneId: payload.zoneId });
         };
 
         

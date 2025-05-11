@@ -38,7 +38,7 @@ export class Door extends Phaser.Physics.Arcade.Sprite implements CustomGameObje
     scene.physics.add.existing(this);
     this.setInteractive({useHandCursor: true});
     this.on('pointerdown', () => {
-      this.scene.events.emit(GameEvents.DOOR_TRIGGER, {door: this, doorId: this.zoneId} as GameEventPayloads[GameEvents.DOOR_TRIGGER]);
+      this.scene.events.emit(GameEvents.DOOR_TRIGGER, { zoneId: this.zoneId} as GameEventPayloads[GameEvents.DOOR_TRIGGER]);
     });
     this.setOrigin(0, 1).setImmovable(true);
 

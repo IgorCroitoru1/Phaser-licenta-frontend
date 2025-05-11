@@ -19,6 +19,7 @@ import { CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { ChannelGroupProps } from "./sidebar-collapsible-group";
 import { NearbyUser } from "./nearby-user";
 import { ChannelUser } from "@/user/ChannelUser";
+import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 const channels: Channel[] = [
     {
         id: "1",
@@ -71,7 +72,7 @@ const nearbyUsers: ChannelUser[] = [
 ]
 
 export function AppSidebar() {
-   const nearbyUsers = useChannelStore((state) => state.nearbyUsers); // Adjust selector as needed
+   const nearbyUsers = useNearbyUsers() // Adjust selector as needed
     return (
         <Sidebar>
             <SidebarContent>
@@ -83,13 +84,12 @@ export function AppSidebar() {
                 ))}
                 </SidebarCollapsibleGroup>
                 <SidebarCollapsibleGroup name="Persoane in apropiere">
-                  {Array.from(nearbyUsers).map((userId) => {
-                    const user = useChannelStore.getState().users.get(userId);
-                    if (!user) return null; // Skip if user not found
+                  {nearbyUsers.map((user) => {
                     return (
                         <NearbyUser key={user.id} user={user} />
-                    );
-                  })}
+                    )
+                  })
+                  }
                 </SidebarCollapsibleGroup>
             </SidebarContent>
         </Sidebar>

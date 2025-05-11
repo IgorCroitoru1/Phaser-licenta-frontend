@@ -9,7 +9,7 @@ export const EventBus = new Events.EventEmitter();
 
 export interface GameEventPayloads {
     [GameEvents.PLAYER_MOVE]: Position; // Player position and velocity
-    [GameEvents.DOOR_TRIGGER]: { door:Door, doorId: number };
+    [GameEvents.DOOR_TRIGGER]: { zoneId: number };
     [GameEvents.PLAYER_JOINED]: { playerId: string };
     [GameEvents.CURRENT_ZONE]: { zoneId: number };
     [GameEvents.ZOOM_CHANGE]: number; // Zoom level

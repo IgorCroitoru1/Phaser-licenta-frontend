@@ -203,8 +203,6 @@ export function getTiledDoorObjectsFromMap(
   const doorObjects: TiledDoorObject[] = [];
 
   const tiledObjects = getTiledObjectsFromLayer(map, layerName);
-  console.log(tiledObjects)
-  console.log(tiledObjects)
   tiledObjects.forEach((tiledObject) => {
     const isOpen = getTiledPropertyByName<boolean>(
       tiledObject.properties,

@@ -115,16 +115,18 @@ export class MyScene extends Phaser.Scene {
                 zoneId: parseInt(layerName.split("/")[1], 10),
             };
         });
-        const doorLayerNames = zones.find((layer) =>
-            layer.name.endsWith(`/${TILED_LAYER_NAMES.DOOR}`)
-        )
-            ? [
-                  zones.find((layer) =>
-                      layer.name.endsWith(`/${TILED_LAYER_NAMES.DOOR}`)
-                  )!,
-              ]
-            : [];
-        doorLayerNames.forEach((layer) => {
+        // Find all door layers and ensure they're unique by zoneId
+        const doorLayerNames = zones
+            .filter(layer => layer.name.endsWith(`/${TILED_LAYER_NAMES.DOOR}`))
+            .reduce((uniqueLayers, layer) => {
+            // Only add if not already in the list (based on zoneId)
+            if (!uniqueLayers.some(existingLayer => existingLayer.zoneId === layer.zoneId)) {
+                uniqueLayers.push(layer);
+            }
+            return uniqueLayers;
+            }, [] as { name: string; zoneId: number }[]);
+            console.log("Door Layer Names: ", doorLayerNames);
+        doorLayerNames.forEach(layer => {
             this.createDoors(this.map, layer.name, layer.zoneId);
         });
        // this.setupDoorsInteractivity();
@@ -146,15 +148,17 @@ export class MyScene extends Phaser.Scene {
             this.emitPlayersPosition();
 
         });
+        this.events.on(Phaser.Scenes.Events.PRE_RENDER, this.preRender, this);
+        console.log(this.objectsByZoneId)
         // })
         EventBus.emit("current-scene-ready", this);
         //const doorsLayers = zone.filter((layer) =>  layer.name.endsWith(`/${TILED_LAYER_NAMES.OPEN_DOOR}`) || layer.name.endsWith(`/${TILED_LAYER_NAMES.CLOSED_DOOR}`));
     }
-    preUpdate(){
+    preRender(){
+        this.updateFog();
 
     }
     update() {
-        this.updateFog();
         this.trackUserZone();
         this.checkCameraChanges()
         // this.emitPlayersPosition();
