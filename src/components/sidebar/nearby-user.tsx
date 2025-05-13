@@ -1,6 +1,8 @@
 import { ChannelUser } from "@/user/ChannelUser";
 import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import SidebarCollapsibleGroup from "./sidebar-collapsible-group";
+import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 
 export interface NearbyUserProps {
     user: ChannelUser;
@@ -22,3 +24,17 @@ export const NearbyUser = ({ user }: NearbyUserProps) => {
         </SidebarMenuItem>
     );
 };
+
+export const NearbyUses = ()=>{
+    const nearbyUsers = useNearbyUsers();
+    return (
+          <SidebarCollapsibleGroup name="Persoane in apropiere">
+                  {nearbyUsers.map((user) => {
+                    return (
+                        <NearbyUser key={user.id} user={user} />
+                    )
+                  })
+                  }
+                </SidebarCollapsibleGroup>
+    )
+}

@@ -17,7 +17,7 @@ import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent } from "../ui/collapsible";
 import { CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { ChannelGroupProps } from "./sidebar-collapsible-group";
-import { NearbyUser } from "./nearby-user";
+import { NearbyUser, NearbyUses } from "./nearby-user";
 import { ChannelUser } from "@/user/ChannelUser";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 const channels: Channel[] = [
@@ -72,7 +72,7 @@ const nearbyUsers: ChannelUser[] = [
 ]
 
 export function AppSidebar() {
-   const nearbyUsers = useNearbyUsers() // Adjust selector as needed
+  console.log("AppSidebar rerender");
     return (
         <Sidebar>
             <SidebarContent>
@@ -83,14 +83,7 @@ export function AppSidebar() {
                     <SidebarChannel key={channel.id} channel={channel} />
                 ))}
                 </SidebarCollapsibleGroup>
-                <SidebarCollapsibleGroup name="Persoane in apropiere">
-                  {nearbyUsers.map((user) => {
-                    return (
-                        <NearbyUser key={user.id} user={user} />
-                    )
-                  })
-                  }
-                </SidebarCollapsibleGroup>
+               <NearbyUses/>
             </SidebarContent>
         </Sidebar>
     );
