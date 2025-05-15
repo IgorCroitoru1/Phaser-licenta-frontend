@@ -137,9 +137,10 @@ export const ChannelManager = () => {
         const scene = phaserRef.current?.scene as MyScene;
 
         if (!scene || !room || !scene.sys || !scene.sys.isActive()) {
-            console.warn("Scene is not ready or destroyed");
+            console.warn("Scene is not ready or destroyed", scene, room);
             return;
         }
+        console.log("Scene is ready", scene, room);
         // useChannelStore.getState().setCamera(scene.cameras.main.zoom);
         console.log("Room use effect")
         console.log("Scene loaded:", sceneLoaded);

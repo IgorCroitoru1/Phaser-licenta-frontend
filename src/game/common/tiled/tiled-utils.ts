@@ -8,7 +8,9 @@ import {
   TiledZoneObject,
 } from './types';
 import {
+  OBJECT_TYPES,
   TILED_DOOR_OBJECT_PROPERTY,
+  TILED_OBJECT_PROPERTY,
   TILED_ZONE_OBJECT_PROPERTY,
 } from './common';
 import { Types } from 'phaser';
@@ -72,6 +74,7 @@ export function getTiledProperties(properties: unknown): TiledObjectProperty[] {
  * stored on an array, and we need to loop through the Array to find the property we are looking for.
  */
 export function getTiledPropertyByName<T>(properties: TiledObjectProperty[], propertyName: string): T | undefined {
+  console.log('getTiledPropertyByName', propertyName, properties);
   const tiledProperty = properties.find((prop) => {
     return prop.name === propertyName;
   });
@@ -79,6 +82,50 @@ export function getTiledPropertyByName<T>(properties: TiledObjectProperty[], pro
     return undefined;
   }
   return tiledProperty.value as T;
+}
+
+export function getObjectsByProprietyType(map: Phaser.Tilemaps.Tilemap, type: string): TiledObjectWithProperties[] {
+  const result: TiledObjectWithProperties[] = [];
+  map.objects.forEach((layer, index) => {
+    layer.objects.forEach((tiledObject) => {
+      if (tiledObject.type === type) {
+         if (
+          tiledObject.x !== undefined &&
+          tiledObject.y !== undefined &&
+          tiledObject.width !== undefined &&
+          tiledObject.height !== undefined &&
+          tiledObject.id !== undefined
+        ) {
+          //ajustam daca e un tiledObject cu gid
+          //const adjustedY = tiledObject.gid !== undefined ? tiledObject.y - tiledObject.height : tiledObject.y;
+          result.push({
+            id: tiledObject.id,
+            x: tiledObject.x,
+            y: tiledObject.y,
+            width: tiledObject.width,
+            height: tiledObject.height,
+            gid: tiledObject.gid,
+            properties: getTiledProperties(tiledObject.properties),
+          });
+        }
+      }
+    })
+  });
+
+  return result;
+}
+
+    
+export function isValidObject(
+  obj: Phaser.Types.Tilemaps.TiledObject
+): obj is Phaser.Types.Tilemaps.TiledObject & Required<Pick<Phaser.Types.Tilemaps.TiledObject, 'x' | 'y' | 'width' | 'height' | 'id'>> {
+  return (
+    obj.x !== undefined &&
+    obj.y !== undefined &&
+    obj.width !== undefined &&
+    obj.height !== undefined &&
+    obj.id !== undefined
+  );
 }
 
 /**
@@ -95,11 +142,13 @@ export function getTiledObjectsFromLayer(map: Phaser.Tilemaps.Tilemap, layerName
           tiledObject.x !== undefined &&
           tiledObject.y !== undefined &&
           tiledObject.width !== undefined &&
-          tiledObject.height !== undefined
+          tiledObject.height !== undefined &&
+          tiledObject.id !== undefined 
         ) {
           //ajustam daca e un tiledObject cu gid
           //const adjustedY = tiledObject.gid !== undefined ? tiledObject.y - tiledObject.height : tiledObject.y;
           result.push({
+            id: tiledObject.id,
             x: tiledObject.x,
             y: tiledObject.y,
             width: tiledObject.width,
@@ -115,10 +164,27 @@ export function getTiledObjectsFromLayer(map: Phaser.Tilemaps.Tilemap, layerName
   return result;
 }
 
+export function toTiledZoneObject(tiledObject: Phaser.Types.Tilemaps.TiledObject): TiledZoneObject | undefined {
+  if (
+          tiledObject.x !== undefined &&
+          tiledObject.y !== undefined &&
+          tiledObject.width !== undefined &&
+          tiledObject.height !== undefined &&
+          tiledObject.id !== undefined 
+        )
+  return {
+    x: tiledObject.x,
+    y: tiledObject.y,
+    width: tiledObject.width,
+    height: tiledObject.height,
+    zoneId: getTiledPropertyByName<number>(tiledObject.properties, TILED_ZONE_OBJECT_PROPERTY.ID) ?? -1,
+    id: tiledObject.id
+  };
+}
 /**
  * Finds all of the valid 'Zone' Tiled Objects on a given layer of a Tilemap.
  */
-export function getTiledZoneObjectsFromMap(map: Phaser.Tilemaps.Tilemap, layerName: string): TiledZoneObject[] {
+export function getTiledZoneObjectsFromLayer(map: Phaser.Tilemaps.Tilemap, layerName: string): TiledZoneObject[] {
   const roomObjects: TiledZoneObject[] = [];
 
   // loop through each object and validate object has properties for the object we are planning to build
@@ -134,7 +200,8 @@ export function getTiledZoneObjectsFromMap(map: Phaser.Tilemaps.Tilemap, layerNa
       y: tiledObject.y,
       width: tiledObject.width,
       height: tiledObject.height,
-      id,
+      zoneId: id,
+      id: tiledObject.id
     });
   });
 
@@ -193,10 +260,50 @@ export function getTilesetsUsedInTiledObjects(map: Phaser.Tilemaps.Tilemap): Set
 
   return usedTilesets;
 }
+export function getDoorObjectsFromMap(map: Phaser.Tilemaps.Tilemap): TiledDoorObject[] {
+  const doorObjects: TiledDoorObject[] = [];
+
+  // loop through each object and validate object has properties for the object we are planning to build
+  const tiledObjects = getObjectsByProprietyType(map, OBJECT_TYPES.DOOR);
+  tiledObjects.forEach((tiledObject) => {
+    const isOpen = getTiledPropertyByName<boolean>(
+      tiledObject.properties,
+      TILED_DOOR_OBJECT_PROPERTY.IS_OPEN
+    );
+    const zoneId = getTiledPropertyByName<number>(
+      tiledObject.properties,
+      TILED_DOOR_OBJECT_PROPERTY.ZONE_ID
+    );
+    const id = getTiledPropertyByName<number>(
+      tiledObject.properties,
+      TILED_DOOR_OBJECT_PROPERTY.ID
+    )!;
+    const zindex = getTiledPropertyByName<number>(
+      tiledObject.properties,
+      TILED_OBJECT_PROPERTY.ZINDEX
+    )
+    if (isOpen === undefined || zoneId === undefined) {
+      return; // Skip invalid objects
+    }
+
+    doorObjects.push({
+      x: tiledObject.x!,
+      y: tiledObject.y!,
+      width: tiledObject.width!,
+      height: tiledObject.height!,
+      gid: tiledObject.gid,
+      isOpen,
+      zoneId,
+      id,
+      zindex: zindex,
+    });
+  });
+  return doorObjects;
+}
 /**
  * Finds all of the valid 'Door' Tiled Objects on a given layer of a Tilemap.
  */
-export function getTiledDoorObjectsFromMap(
+export function getTiledDoorObjectsFromLayer(
   map: Phaser.Tilemaps.Tilemap,
   layerName: string
 ): TiledDoorObject[] {

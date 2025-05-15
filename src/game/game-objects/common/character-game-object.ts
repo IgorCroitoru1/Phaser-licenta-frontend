@@ -14,9 +14,9 @@ export type CharacterConfig = {
 };
 
 export abstract class CharacterGameObject extends Phaser.Physics.Arcade.Sprite implements CustomGameObject {
-  protected _speedComponent: SpeedComponent;
   protected _isPlayer: boolean;
   protected _targetPosition: Position;
+  protected _speed: number;
   constructor(config: CharacterConfig) {
     const {
       scene,
@@ -28,13 +28,12 @@ export abstract class CharacterGameObject extends Phaser.Physics.Arcade.Sprite i
     } = config;
     const { x, y } = position;
     super(scene, x, y, assetKey, frame || 0);
-
+    this._speed = speed;
     // add object to scene and enable phaser physics
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setDisplaySize(PLAYER_WIDTH, PLAYER_HEIGHT)
     // add shared components
-    this._speedComponent = new SpeedComponent(this, speed);
 
     // create state machine
 
@@ -45,7 +44,7 @@ export abstract class CharacterGameObject extends Phaser.Physics.Arcade.Sprite i
   
 
   get speed(): number {
-    return this._speedComponent.speed;
+    return this._speed;
   }
 
 

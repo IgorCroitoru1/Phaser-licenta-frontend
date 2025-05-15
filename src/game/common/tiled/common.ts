@@ -12,6 +12,10 @@ export const TILED_LAYER_NAMES = {
   ZONES: 'zones',
 } as const;
 
+export const OBJECT_TYPES = {
+  DOOR: 'door',
+  ZONE: "zone"
+}
 export const TILED_TILESET_NAMES = {
   GLASS_WOODEN_WALL: 'glass-wooden-wall',
   COLLISION: 'collision',
@@ -34,9 +38,11 @@ export const DOOR_TYPE = {
   LOCK: 'LOCK',
 } as const;
 
+export const TILED_OBJECT_PROPERTY = {
+  ZINDEX: "zindex"
+} as const;
 
-
-export const TILED_DOOR_OBJECT_PROPERTY = {
+export const TILED_DOOR_OBJECT_PROPERTY =  {
   ID: 'id',
   IS_OPEN: 'isOpen',
   ZONE_ID: 'zoneId',
