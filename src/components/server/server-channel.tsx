@@ -43,7 +43,6 @@ export function ServerChannel({
     const onClick = async () => {
       if (activeChannel?.id !== channel.id) {
           const success = await switchChannel(channel);
-          console.log("Success", success);
           if (success) {
               setActiveChannel(channel);
           }

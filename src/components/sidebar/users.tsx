@@ -3,11 +3,12 @@ import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import SidebarCollapsibleGroup from "./sidebar-collapsible-group";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
+import { useChannelStore } from "@/store/useChannelStore";
 
 export interface NearbyUserProps {
     user: ChannelUser;
 }
-export const NearbyUser = ({ user }: NearbyUserProps) => {
+export const SidebarUser = ({ user }: NearbyUserProps) => {
     return (
         <SidebarMenuItem>
             <SidebarMenuButton asChild>
@@ -31,10 +32,24 @@ export const NearbyUses = ()=>{
           <SidebarCollapsibleGroup name="Persoane in apropiere">
                   {nearbyUsers.map((user) => {
                     return (
-                        <NearbyUser key={user.id} user={user} />
+                        <SidebarUser key={user.id} user={user} />
                     )
                   })
                   }
                 </SidebarCollapsibleGroup>
+    )
+}
+
+export const OnlineUsers = () => {
+    const users = useChannelStore((state) => state.users);
+    return (
+        <SidebarCollapsibleGroup name="Utilizatori online">
+            {Array.from(users.values()).map((user) => {
+                return (
+                    <SidebarUser key={user.id} user={user} />
+                )
+            })
+            }
+        </SidebarCollapsibleGroup>
     )
 }

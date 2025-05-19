@@ -74,7 +74,6 @@ export function getTiledProperties(properties: unknown): TiledObjectProperty[] {
  * stored on an array, and we need to loop through the Array to find the property we are looking for.
  */
 export function getTiledPropertyByName<T>(properties: TiledObjectProperty[], propertyName: string): T | undefined {
-  console.log('getTiledPropertyByName', propertyName, properties);
   const tiledProperty = properties.find((prop) => {
     return prop.name === propertyName;
   });

@@ -81,8 +81,7 @@ export const UserRenderer = () => {
       filteredAudioTracks: audioTracks.filter(audioFilterPredicate),
     }
   }, [nearbyUsers,videoTracks, audioTracks, userZones, zoneStates, user?.id]);
-  console.log("Filtered video tracks", filteredVideoTracks.length)
-  console.log("Filtered audio tracks", filteredAudioTracks.length)
+
   // const userComponents = useMemo(() => {
   //   return participants.map((participant) => {
   //     // Find matching user in your Zustand store

@@ -35,8 +35,8 @@ export default function CameraAccessPage() {
 //   const { setStream } = useMediaStream();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [localCameraId, setLocalCameraId] = useState<string | null>(null);
-  const [localMicrophoneId, setLocalMicrophoneId] = useState<string | null>(null);
+  const [localCameraId, setLocalCameraId] = useState<string | null>("off");
+  const [localMicrophoneId, setLocalMicrophoneId] = useState<string | null>("off");
   // const [devicesPermissionsGranted, setDevicesPermissionsGranted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -204,7 +204,7 @@ export default function CameraAccessPage() {
           {/* Camera Selection */}
           <div className="w-80">
             <label className="block text-gray-700 mb-1">Camera</label>
-            <Select onValueChange={onVideoSelectChange} value={localCameraId || undefined}>
+            <Select onValueChange={onVideoSelectChange} value={localCameraId || "off"}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a camera" />
               </SelectTrigger>
@@ -228,7 +228,7 @@ export default function CameraAccessPage() {
           {/* Microphone Selection */}
           <div className="w-80">
             <label className="block text-gray-700 mb-1">Microfon</label>
-            <Select onValueChange={onAudioSelectChange} value={localMicrophoneId || undefined}>
+            <Select onValueChange={onAudioSelectChange} value={localMicrophoneId || "off"}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a microphone" />
               </SelectTrigger>

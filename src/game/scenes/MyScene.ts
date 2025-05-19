@@ -95,7 +95,7 @@ export class MyScene extends Phaser.Scene {
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.objectsByZoneId = {};
         this.map = this.make.tilemap({ key: this.cfg.name });
-        console.log("Map: ", this.map);
+        // console.log("Map: ", this.map);
         this.createFogLayer();
         this.createMap(this.map);
         console.log(this.objectsByZoneId)
@@ -688,12 +688,10 @@ export class MyScene extends Phaser.Scene {
                 isLocal: localPlayer,
                 playerId: id,
             });
-            console.log("Local player created: ", this._player);
             if (this._player) {
                 this.physics.add.collider(this._player, this.collisionLayer);
                 this.doorObjects.forEach((door) => {
                     if(!door.isOpen) {
-                        console.log("Adding collider to door: ", door);
                         this.physics.add.collider(this._player!, door);
                     }
                 })
@@ -714,7 +712,6 @@ export class MyScene extends Phaser.Scene {
                 this.physics.add.collider(player, this.collisionLayer);
                 this.doorObjects.forEach((door) => {
                     if(!door.isOpen) {
-                        console.log("Adding collider to door: ", door);
                         this.physics.add.collider(player, door);
                     }
                 })

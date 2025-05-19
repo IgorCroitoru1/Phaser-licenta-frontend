@@ -8,5 +8,7 @@ export interface ColyseusEventPayloads {
   [GameEvents.PLAYER_JOINED]:  ChannelUserDto ;
   [GameEvents.CURRENT_ZONE]: { zoneId: number };
   [GameEvents.INIT_USERS]: ChannelUserDto[];
+  [GameEvents.MESSAGE]: { message: string;};
+  [GameEvents.DOOR_RING]: { zoneId: number; by: string; };
 }
 

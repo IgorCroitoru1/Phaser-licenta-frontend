@@ -94,9 +94,10 @@ export const ChannelManager = () => {
        
         const currentToken = useAuthStore.getState().accessToken;
         try {
-            await joinRoom(channel.colyseusRoomName, {
+            await joinRoom("channel", {
                 mapId: channel.mapName,
                 token: currentToken,
+                channelId: channel.id,
             });
             useChannelStore.getState().setActiveChannel(channel)
         } catch (error) {
@@ -142,8 +143,6 @@ export const ChannelManager = () => {
         }
         console.log("Scene is ready", scene, room);
         // useChannelStore.getState().setCamera(scene.cameras.main.zoom);
-        console.log("Room use effect")
-        console.log("Scene loaded:", sceneLoaded);
         const createThrottledSendPlayerMove = (room: Room) =>
         throttle((payload: ColyseusEventPayloads[GameEvents.PLAYER_MOVE]) => {
             sendRoomEvent(room, GameEvents.PLAYER_MOVE, payload);
@@ -194,7 +193,7 @@ export const ChannelManager = () => {
         const $ = getStateCallbacks(room);
        
         $(room.state).players.onAdd((player, id) => {
-            console.log("Player joined:", id, player);
+            // console.log("Player joined:", id, player);
             $(player).onChange(() => {
                 // useChannelStore.getState().updateUserPosition(id, 
                 //     player.x,
@@ -204,7 +203,7 @@ export const ChannelManager = () => {
                 //userRefsManager.updateWorldPosition(id, player.x, player.y);
             });
             $(player).listen("currentZoneId", (val, prevVal) => {
-                console.log("Player zone updated:", player.id, val, prevVal);
+                // console.log("Player zone updated:", player.id, val, prevVal);
                 useChannelStore.getState().updateUserZone(player.id, val);
                 // scene.setPlayerZone(id, val);
             })
@@ -229,15 +228,13 @@ export const ChannelManager = () => {
                 // console.log("Player nearby users updated:", player.id, val);
                 useChannelStore.getState().updateNearbyUsers(val.toArray());
             })
-            console.log("Player.id", player.id, user?.id);
             scene.addPlayer(id, id === user?.id, player.x, player.y);
-            console.log(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`)
+            // console.log(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`)
             // toast(`Utilizatorul ${id} s-a alăturat ${room.sessionId} ${id}!`);
 
         });
 
         $(room.state).players.onRemove((player, id) => {
-            console.log("Player left:", id);
             useChannelStore.getState().removeUser(player.id);
             const user = useChannelStore.getState().users.get(id)
             scene.removePlayer(id);
@@ -248,7 +245,6 @@ export const ChannelManager = () => {
         $(room.state).zones.onAdd((zone, id) => {
             useChannelStore.getState().setZoneState(zone.id, zone.isOpen);
             $(zone).listen("isOpen",(val, prevVal) => {
-                console.log("Zone updated:", zone.id, val, prevVal);
                 scene.setZoneState(zone.id, val)
                 useChannelStore.getState().setZoneState(zone.id, val);
             })
@@ -275,7 +271,6 @@ export const ChannelManager = () => {
     }, [sceneLoaded, room]);
 
         useEffect(() => {
-            console.log(user)
             return () => {
                 useChannelStore.getState().clear();
                 // userRefsManager

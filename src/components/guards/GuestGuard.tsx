@@ -12,7 +12,6 @@ export default function GuestGuard({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!isAuthLoading && accessToken) {
       const redirectTo = searchParams?.get("from") || "/"
-      console.log("Access token found, redirecting to home page", redirectTo)
       router.replace(redirectTo)
     }
   }, [accessToken, isAuthLoading, router])

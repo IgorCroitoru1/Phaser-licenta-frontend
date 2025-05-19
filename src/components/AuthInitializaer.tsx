@@ -24,7 +24,6 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log('Initializing auth...')
       setAuthLoading(true)
 
       try {

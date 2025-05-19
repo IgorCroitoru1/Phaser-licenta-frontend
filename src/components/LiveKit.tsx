@@ -34,7 +34,6 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
     if (!activeChannel) return;
 
     isUnmountingRef.current = false;
-    console.log('Local participant:', roomInstance.localParticipant)
     const connectWithCleanup = async () => {
       try {
         // 1. First disconnect from any existing room
@@ -61,20 +60,15 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
           
         });
         roomInstance.on("localTrackPublished", (track) => {
-          console.log("Local track published", track);
         })
         roomInstance.on("localTrackSubscribed", (track) => {
-          console.log("Local track subscribed", track);
         })
         roomInstance.on("activeDeviceChanged", (device, id) => {
-          console.log("Active device changed", device, id);
         })
         roomInstance.localParticipant.on("trackMuted", (track) => {
-          console.log("Local track muted", track);
 
         })
         roomInstance.localParticipant.on("trackUnmuted", (track) => {
-          console.log("Local track unmuted", track);
         })
         // if(cameraId && cameraId !== "off"){
         //   const cameraTrack = await createLocalVideoTrack({ deviceId: cameraId });

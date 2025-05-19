@@ -74,6 +74,7 @@ type ChannelActions = {
   removeUser: (id: string) => void;
   clearUsers: () => void;
   updateUser: (id: string, update: Partial<ChannelUser>) => void;
+  getUser: (id: string) => ChannelUser | undefined;
   // updateUserPosition: (id: string, x: number, y: number) => void;
   // updateAllPositions: (updates: Array<{ id: string; x: number; y: number }>) => void;
 
@@ -128,7 +129,7 @@ type ChannelStore = {
   ChannelActions;
 enableMapSet();
 export const useChannelStore = create<ChannelStore>()(
-  immer((set) => ({
+  immer((set, get) => ({
     activeChannel: null,
     users: new Map(),
     localUser: null,
@@ -214,7 +215,9 @@ export const useChannelStore = create<ChannelStore>()(
       set((state) => {
         state.users.delete(id);
       }),
-    
+   getUser: (id) =>
+    get().users.get(id),
+
     clearUsers: () =>
       set((state) => {
         state.users.clear();

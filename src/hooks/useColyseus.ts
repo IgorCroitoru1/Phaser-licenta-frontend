@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 export type GameRoomOptions = {
     mapId: string;
     token: string | null
+    channelId: string;
   }
 
 export function useColyseus() {
@@ -29,9 +30,12 @@ export function useColyseus() {
         }
     }, []);
 
-    const joinRoom = useCallback(async (roomName: string, options: GameRoomOptions, retryCount = 0) => {
+    const joinRoom = async (roomName: string, options: GameRoomOptions, retryCount = 0) => {
+        console.log("Joining room:", roomName);
         if (!clientRef.current) return;
-        if (room && room.name === roomName) return;
+        if (room) {
+            await leaveRoom();
+            };
     
         setIsConnecting(true);
         setJoinError(false);
@@ -68,9 +72,13 @@ export function useColyseus() {
                 console.error("❌ Room Error:", code, message);
             });
 
-            newRoom.onMessage("players_data", (players) => {
-                console.log("Received players:", players);
-              });
+            newRoom.onMessage(GameEvents.MESSAGE, (data: ColyseusEventPayloads[GameEvents.MESSAGE]) => {
+                console.log("Message received:", data.message);
+                toast(data.message);
+            })
+            newRoom.onMessage(GameEvents.DOOR_RING, (data: ColyseusEventPayloads[GameEvents.DOOR_RING]) => {
+                toast(`${useChannelStore.getState().getUser(data.by)?.name} a sunat la ușă!`);
+            })
     
         } catch (error) {
             console.error("❌ Error joining room:", error);
@@ -96,19 +104,22 @@ export function useColyseus() {
         } finally {
             setIsConnecting(false);
         }
-    }, [room]);
+    }
 
     // ✅ Leave Room
-    const leaveRoom = useCallback(async () => {
+    const leaveRoom = async () => {
         if (room && room.connection.isOpen && !isConnecting) {
             console.log("👋 Leaving room:", room.name);
             await room.leave();
             setIsConnected(false);
+            console.log("Before setting room to null");
             setRoom(null);
+            console.log("Room is null");
         }
-    }, [room, isConnecting]);
+    }
 
     useEffect(() => {
+        console.log("joinRoom recrated")
         return () => {
             if (room?.connection.isOpen) {
                 room.leave();

@@ -161,7 +161,6 @@ export function UserAuthForm({ className, isRegister = false, ...props }: UserAu
                   className="px-4 py-2 bg-primary text-white rounded-md"
                   onClick={() => {
                     // TODO: handle sending the code
-                    console.log("Send Code")
                   }}
                 >
                   Trimite

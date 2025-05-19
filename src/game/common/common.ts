@@ -38,4 +38,6 @@ export enum GameEvents  {
   //DOOR_OPENED = "door_open",
   ZOOM_CHANGE = "zoom_change", // Event name for zoom changes
   DOOR_TRIGGER = "door_trigger", // Event name for door click events
+  MESSAGE = "message",
+  DOOR_RING = "door_ring",
 }
