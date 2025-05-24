@@ -81,10 +81,10 @@ export class MyScene extends Phaser.Scene {
             ASSET_PACK_KEYS.MAIN,
             `assets/data/${this.cfg.name}/assets.json`
         );
-        this.load.json(
-            "layerOrder",
-            `assets/data/${this.cfg.name}/layers-order.json`
-        );
+        // this.load.json(
+        //     "layerOrder",
+        //     `assets/data/${this.cfg.name}/layers-order.json`
+        // );
     }
     create() {
         if (!this.input.keyboard) {
