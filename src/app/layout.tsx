@@ -14,14 +14,14 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en">
-          <body className='aplication-body'>
-            <main className={styles.main}>
+          <body className={`${styles.main} aplication-body` }>
+            {/* <main className={styles.main}> */}
                 <AuthInitializer>
                 <AuthLoadingGate>
                   {children}
                 </AuthLoadingGate>
                 </AuthInitializer>
-            </main>
+            {/* </main> */}
           </body>
         </html>
       )

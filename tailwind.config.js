@@ -9,9 +9,8 @@ module.exports = {
     extend: {
       colors: {},
     },
-  },
-  plugins: [
+  },  plugins: [
     require("tailwindcss-animate"),
-    
+    // require('@tailwindcss/line-clamp'),
   ],
 };

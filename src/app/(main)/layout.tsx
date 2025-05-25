@@ -10,12 +10,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <WithProvidersLayout>
       <div className="flex h-screen">
         {/* <div className="w-60 bg-gray-800 text-white"> */}
-        <SidebarProvider>
-
-              <AppSidebar/>
-              <div className="flex-1 relative">
-              {children}
-            </div>
+        <SidebarProvider>              
+          <AppSidebar/>
+              <main className="flex-1">
+                {children}
+              </main>
         </SidebarProvider>
 
           {/* <ServerSidebar /> */}

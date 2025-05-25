@@ -5,7 +5,7 @@
         {
             "type": "tilemapTiledJSON",
             "key": "office-1",
-            "url": "office-1-map.json"
+            "url": "office-1.json"
         }
      ]
     },
