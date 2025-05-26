@@ -19,6 +19,7 @@ import {
     type ChannelCreationFormData,
 } from "@/lib/validations/channel";
 import api from "@/lib/axios";
+import ChannelService from "@/services/channelService";
 
 interface ChannelCreationDialogProps {
     open: boolean;
@@ -118,13 +119,17 @@ export function ChannelCreationDialog({
         setFieldErrors({});
 
         try {
-            const response = await api.post("/channels", {
+            // const response = await api.post("/channels", {
+            //     name: data.name,
+            //     maxUsers: data.maxUsers,
+            //     mapName: data.mapName,
+            // });
+            const response = await ChannelService.createChannel({
                 name: data.name,
                 maxUsers: data.maxUsers,
                 mapName: data.mapName,
-            });
-
-            if (response.status === 200 || response.status === 201) {
+            })
+            if (response) {
                 // Reset form and close dialog on success
                 reset();
                 setError(null);

@@ -11,10 +11,10 @@ import { use } from "matter";
 export type Channel = {
   id: string;
   name: string;
-  sceneName?: string;
   mapName: string;
-  colyseusRoomName: string;
-  livekitRoomName: string;
+  maxUsers: number;
+  isActive: boolean;
+  createdBy: string;
 };
 
 

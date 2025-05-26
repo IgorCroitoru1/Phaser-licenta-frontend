@@ -95,7 +95,7 @@ export const ChannelManager = () => {
         const currentToken = useAuthStore.getState().accessToken;
         try {
             await joinRoom("channel", {
-                mapId: channel.mapName,
+                // mapId: channel.mapName,
                 token: currentToken,
                 channelId: channel.id,
             });

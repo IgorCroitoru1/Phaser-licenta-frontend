@@ -1,6 +1,5 @@
 'use client'
 import "@/styles/globals.css";
-import { ServerSidebar } from '@/components/server/server-sidebar'
 import { WithProvidersLayout } from '@/layouts/WithProvidersLayout'
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";

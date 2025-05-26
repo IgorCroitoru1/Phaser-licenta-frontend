@@ -55,7 +55,7 @@ export const LiveKitProvider = ({ children }: PropsWithChildren) => {
 
         // 3. Connect to new room
         console.log('🔗 Connecting to new room...');
-        const token = await getLivekitToken(activeChannel.livekitRoomName);
+        const token = await getLivekitToken(activeChannel.name);
         await roomInstance.connect(LIVEKIT_URL, token, {
           
         });

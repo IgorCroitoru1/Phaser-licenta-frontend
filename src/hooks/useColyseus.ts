@@ -10,7 +10,7 @@ import { useChannelStore } from "@/store/useChannelStore";
 import { authService } from "@/services/auth";
 import { useAuthStore } from "@/store/useAuthStore";
 export type GameRoomOptions = {
-    mapId: string;
+    // mapId: string;
     token: string | null
     channelId: string;
   }
