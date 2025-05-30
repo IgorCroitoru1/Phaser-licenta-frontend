@@ -9,11 +9,8 @@ export interface ChannelsListRef {
   refreshChannels: () => Promise<void>;
 }
 
-const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {
-  const { 
+const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {  const { 
     userCounts, 
-    connect, 
-    disconnect,
     isConnected,
     isConnecting,
     channelsData 
@@ -27,19 +24,9 @@ const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   // Connect to WebSocket for user counts when authenticated
-  useEffect(() => {
-    if (isAuthenticated && accessToken && !isConnected && !isConnecting) {
-      connect(accessToken);
-    }
-  }, [isAuthenticated, accessToken, isConnected, isConnecting, connect]);
-
-  useEffect(() => {
-    if (!isAuthenticated && isConnected) {
-      disconnect();
-    }
-  }, [isAuthenticated, isConnected, disconnect]);
+  // Note: WebSocket connection is now handled automatically by useWebSocket hook
+  // based on auth store token changes
 
   // Fetch channels from REST API
   const fetchChannels = useCallback(async () => {

@@ -19,9 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* <main className={styles.main}> */}
                 <AuthInitializer>
                 <AuthLoadingGate>
-                  <WebSocketProvider>
                   {children}
-                  </WebSocketProvider>
+                
                 </AuthLoadingGate>
                 </AuthInitializer>
             {/* </main> */}

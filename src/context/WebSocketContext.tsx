@@ -12,6 +12,7 @@ interface WebSocketContextType {
   userCounts: UserCounts;
   connect: (token: string) => Promise<void>;
   disconnect: () => void;
+  forceDisconnect: () => void;
   retry: () => void;
 }
 

@@ -98,7 +98,8 @@ export function AppSidebar() {
                     <OnlineUsers />
                 </SidebarContent>
                 <SidebarFooter>
-                          <CurrentUser user={user} />
+                    {user &&
+                          <CurrentUser user={user} />}
                 </SidebarFooter>
             </Sidebar>
               {/* Channel Creation Dialog */}

@@ -18,6 +18,8 @@ export class WebSocketService {
   private callbacks: WebSocketCallbacks = {};
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
+  private isManualDisconnect = false; // Track manual disconnects for auth logout
+  private currentToken: string | null = null; // Track current token
 
   constructor(serverUrl: string | undefined = process.env.NEXT_PUBLIC_WS_URL) {
     if (!serverUrl) {
@@ -25,17 +27,17 @@ export class WebSocketService {
     }
     this.serverUrl = serverUrl;
   }
-
   connect(token: string, callbacks: WebSocketCallbacks = {}): Promise<boolean> {
     return new Promise((resolve, reject) => {
       try {
         this.callbacks = callbacks;
+        this.isManualDisconnect = false; // Reset manual disconnect flag
+        this.currentToken = token; // Store current token
 
         // Disconnect existing connection if any
         if (this.socket) {
           this.disconnect();
         }
-
         // Create new connection
         this.socket = io(`${this.serverUrl}/channels`, {
           auth: { token },
@@ -98,8 +100,13 @@ export class WebSocketService {
       }
     });
   }
-
   private handleReconnect(token: string) {
+    // Don't reconnect if manually disconnected or token is invalid
+    if (this.isManualDisconnect || !this.currentToken) {
+      console.log('🔌 Skipping reconnect - manual disconnect or no token');
+      return;
+    }
+
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000); // Exponential backoff
@@ -114,12 +121,26 @@ export class WebSocketService {
       this.callbacks.onError?.(new Error('Max reconnection attempts reached'));
     }
   }
-
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
       console.log('🔌 WebSocket disconnected');
+    }
+  }
+
+  // New method for auth logout - ensures complete cleanup
+  forceDisconnect() {
+    this.isManualDisconnect = true;
+    this.currentToken = null;
+    this.reconnectAttempts = 0;
+    this.callbacks = {};
+    
+    if (this.socket) {
+      this.socket.removeAllListeners(); // Remove all listeners
+      this.socket.disconnect();
+      this.socket = null;
+      console.log('🔌 WebSocket force disconnected for logout');
     }
   }
 

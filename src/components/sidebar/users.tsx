@@ -7,6 +7,7 @@ import { useChannelStore } from "@/store/useChannelStore";
 import { UserDto } from "@/dtos/UserDto";
 import { ChevronsUpDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { authService } from "@/services/auth";
 
 export interface NearbyUserProps {
     user: ChannelUser;
@@ -71,11 +72,11 @@ export const CurrentUser = ({user}: CurrentUserProps) => {
                     <Avatar className="w-8.5 h-8.5 rounded-lg">
                         <AvatarImage src="https://github.com/shadcn.png"/>
                         <AvatarFallback className="">
-                            {user.fullName.slice(0, 2).toUpperCase()}
+                            {user.name.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">{user.fullName}</span>
+                        <span className="truncate font-semibold">{user.name}</span>
                         <span className="truncate text-xs">{user.email}</span>
                     </div>
                     <ChevronsUpDown className="ml-auto" />
@@ -86,12 +87,9 @@ export const CurrentUser = ({user}: CurrentUserProps) => {
                   className="w-[--radix-popper-anchor-width]"
                 >
                   <DropdownMenuItem>
-                    <span>Account</span>
+                    <span>Cont</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span>Billing</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={()=> authService.logout()}>
                     <span>Sign out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { ChannelLiveData, ChannelUpdate, UserCounts } from '../types/websocket.types';
 import { webSocketService } from '@/services/websocket';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface UseWebSocketReturn {
   isConnected: boolean;
@@ -11,6 +12,7 @@ interface UseWebSocketReturn {
   userCounts: UserCounts;
   connect: (token: string) => Promise<void>;
   disconnect: () => void;
+  forceDisconnect: () => void;
   retry: () => void;
 }
 
@@ -21,14 +23,15 @@ export const useWebSocket = (): UseWebSocketReturn => {
   const [channelsData, setChannelsData] = useState<ChannelLiveData[]>([]);
   const [userCounts, setUserCounts] = useState<UserCounts>({});
   
-  const tokenRef = useRef<string>('');
+  // const tokenRef = useRef<string>('');
+  const { accessToken } = useAuthStore();
 
   const connect = useCallback(async (token: string) => {
     if (isConnecting || isConnected) return;
     
     setIsConnecting(true);
     setError(null);
-    tokenRef.current = token;
+    // tokenRef.current = token;
 
     try {
       await webSocketService.connect(token, {
@@ -80,7 +83,6 @@ export const useWebSocket = (): UseWebSocketReturn => {
       setError(err instanceof Error ? err.message : 'Connection failed');
     }
   }, [isConnecting, isConnected]);
-
   const disconnect = useCallback(() => {
     webSocketService.disconnect();
     setIsConnected(false);
@@ -90,11 +92,33 @@ export const useWebSocket = (): UseWebSocketReturn => {
     setError(null);
   }, []);
 
+  const forceDisconnect = useCallback(() => {
+    webSocketService.forceDisconnect();
+    setIsConnected(false);
+    setIsConnecting(false);
+    setChannelsData([]);
+    setUserCounts({});
+    setError(null);
+    // tokenRef.current = '';
+  }, []);
   const retry = useCallback(() => {
-    if (tokenRef.current) {
-      connect(tokenRef.current);
+    if (accessToken) {
+      connect(accessToken);
     }
   }, [connect]);
+
+  // Watch auth store token changes - auto connect/disconnect
+  useEffect(() => {
+    if (accessToken && !isConnected && !isConnecting) {
+      // Token available and not connected - auto connect
+      console.log('🔌 Auto-connecting WebSocket with token from store');
+      connect(accessToken);
+    } else if (!accessToken && (isConnected || isConnecting)) {
+      // Token removed but still connected - auto disconnect
+      console.log('🔌 Auto-disconnecting WebSocket - token removed from store');
+      forceDisconnect();
+    }
+  }, [accessToken, isConnected, isConnecting, connect, forceDisconnect]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -111,6 +135,7 @@ export const useWebSocket = (): UseWebSocketReturn => {
     userCounts,
     connect,
     disconnect,
+    forceDisconnect,
     retry,
   };
 };
