@@ -1,12 +1,19 @@
 import { ChannelUser } from "@/user/ChannelUser";
-import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import SidebarCollapsibleGroup from "./sidebar-collapsible-group";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import { useChannelStore } from "@/store/useChannelStore";
+import { UserDto } from "@/dtos/UserDto";
+import { ChevronsUpDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 export interface NearbyUserProps {
     user: ChannelUser;
+}
+
+export interface CurrentUserProps {
+    user: UserDto;
 }
 export const SidebarUser = ({ user }: NearbyUserProps) => {
     return (
@@ -51,5 +58,45 @@ export const OnlineUsers = () => {
             })
             }
         </SidebarCollapsibleGroup>
+    )
+}
+
+export const CurrentUser = ({user}: CurrentUserProps) => {
+    return (
+                  <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="h-12" asChild>
+                  <SidebarMenuButton>
+                    <Avatar className="w-8.5 h-8.5 rounded-lg">
+                        <AvatarImage src="https://github.com/shadcn.png"/>
+                        <AvatarFallback className="">
+                            {user.fullName.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold">{user.fullName}</span>
+                        <span className="truncate text-xs">{user.email}</span>
+                    </div>
+                    <ChevronsUpDown className="ml-auto" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  className="w-[--radix-popper-anchor-width]"
+                >
+                  <DropdownMenuItem>
+                    <span>Account</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Billing</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
     )
 }

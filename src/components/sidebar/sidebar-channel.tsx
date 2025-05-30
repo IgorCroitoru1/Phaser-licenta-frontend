@@ -5,11 +5,12 @@ import { Hash } from "lucide-react";
 
 interface ServerChannelProps {
     channel: Channel;
-  
+    userCount?: number;
   }
 
 export function SidebarChannel({
     channel,
+    userCount = 0,
   }: ServerChannelProps) {
 
      const switchChannel = useChannelStore((state) => state.switchChannel);
@@ -41,6 +42,11 @@ export function SidebarChannel({
           <a className="cursor-pointer">
             <Hash/>
             {channel.name}
+            {(
+              <span className="ml-auto text-xs text-muted-foreground">
+                {`${userCount}/${channel.maxUsers}`}
+              </span>
+            )}
           </a>
           
         </SidebarMenuButton>

@@ -88,12 +88,11 @@ const User = forwardRef<HTMLDivElement, UserProps>(
             trackRef.publication?.kind === "video" &&
             trackRef.publication?.isSubscribed &&
             trackRef.publication?.track &&
-            !isMuted;
-        return (
+            !isMuted;        return (
             <div
                 ref={ref}
                 id={user.id}
-                className="absolute rounded-2xl bg-white shadow-lg z-100 -translate-x-1/2 -translate-y-1/2"
+                className="absolute rounded-2xl bg-white shadow-lg z-10 -translate-x-1/2 -translate-y-1/2"
                 style={{
                     transform: translate,
                     //  transform: `translate(${screenX}px, ${screenY}px)`,
