@@ -1,16 +1,22 @@
 import { UserDto } from '@/dtos/UserDto'
 import api from '@/lib/axios'
 import axiosBare from '@/lib/axiosBare'
-import { useAuthStore } from '@/store/useAuthStore'
 import { Credentials, SignInData, SignUpData } from '@/types/auth'
 import axios, { AxiosInstance } from 'axios'
-import { set } from 'react-hook-form'
 
+// This service is now a singleton that manages global auth state
+// It's designed to work with the React Context
 export class AuthService {
   private instance: AxiosInstance
+  private static authContext: any = null
 
   constructor(instance: AxiosInstance) {
     this.instance = instance
+  }
+
+  // Method to set the auth context from React components
+  public static setAuthContext(context: any) {
+    AuthService.authContext = context
   }
 
   public setBearerToken(token: string) {
@@ -22,29 +28,37 @@ export class AuthService {
       .post<Credentials & {user :UserDto}>('auth/login', signInData)
       .then(({ data: credentials }) => {
         this.setBearerToken(credentials.access_token)
-        useAuthStore.getState().login(credentials.access_token, credentials.user)
+        // Update context if available
+        if (AuthService.authContext) {
+          AuthService.authContext.login(credentials.access_token, credentials.user)
+        }
+        return credentials
     })
       .catch((error) => Promise.reject(error))
   }
 
-//   public async register(signUpData: SignUpData) {
-//     return this.instance
-//       .post<User>('auth/register', signUpData)
-//       .then(({ data: user }) => user)
-//       .catch((error) => Promise.reject(error))
-//   }
-
   public async refreshCredentials() {
     return axiosBare
       .post<Credentials>('auth/refresh')
-      .then(({ data: credentials }) => useAuthStore.getState().setAccessToken(credentials.access_token))
+      .then(({ data: credentials }) => {
+        // Update context if available
+        if (AuthService.authContext) {
+          AuthService.authContext.setAccessToken(credentials.access_token)
+        }
+        return credentials
+      })
       .catch((error) => Promise.reject(error))
   }
 
   public async logout() {
     return this.instance
       .post<void>('auth/logout')
-      .then(() => useAuthStore.getState().logout())
+      .then(() => {
+        // Update context if available
+        if (AuthService.authContext) {
+          AuthService.authContext.logout()
+        }
+      })
       .catch((error) => Promise.reject(error))
   }
 
@@ -56,4 +70,4 @@ export class AuthService {
   }
 }
 
-export const authService =  new AuthService(api)
+export const authService = new AuthService(api)

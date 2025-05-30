@@ -6,12 +6,12 @@ import { RoomEvent, Track } from 'livekit-client'
 import { useChannelStore } from '@/store/useChannelStore'
 import { ChannelUser } from '@/user/ChannelUser'
 import User from './User'
-import { useAuthStore } from '@/store/useAuthStore'
+import { useAuth } from '@/context/AuthContext'
 
 export const UserRenderer = () => {
   const users = useChannelStore((state) => state.users)
   const userZones = useChannelStore(state => state.userZones);
-  const user = useAuthStore(state => state.user);
+  const { user } = useAuth();
   const zoneStates = useChannelStore((s) => s.zoneStates)
   const participants = useParticipants()
   const nearbyUsers = useChannelStore((s) => s.nearbyUsers)

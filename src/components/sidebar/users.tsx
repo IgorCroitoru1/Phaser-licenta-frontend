@@ -71,11 +71,11 @@ export const CurrentUser = ({user}: CurrentUserProps) => {
                     <Avatar className="w-8.5 h-8.5 rounded-lg">
                         <AvatarImage src="https://github.com/shadcn.png"/>
                         <AvatarFallback className="">
-                            {user.fullName.slice(0, 2).toUpperCase()}
+                            {user.name?.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">{user.fullName}</span>
+                        <span className="truncate font-semibold">{user.name}</span>
                         <span className="truncate text-xs">{user.email}</span>
                     </div>
                     <ChevronsUpDown className="ml-auto" />

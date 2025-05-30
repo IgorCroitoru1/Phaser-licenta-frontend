@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/context/AuthContext';
 import { useChannelStore } from '@/store/useChannelStore';
 import { ChannelUser } from '@/user/ChannelUser';
 
 export function useNearbyUsers(): ChannelUser[] {
-  const user = useAuthStore((state) => state.user);
+  const { user } = useAuth();
   const userZones = useChannelStore((state) => state.userZones);
   const nearbyUsersMap = useChannelStore((state) => state.nearbyUsers); // Map or Set depending on your structure
   const users = useChannelStore((state) => state.users); // Adjust selector as needed

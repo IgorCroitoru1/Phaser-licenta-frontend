@@ -14,7 +14,8 @@ import { Channel, useChannelStore } from "@/store/useChannelStore";
 import { ChannelUser } from "@/user/ChannelUser";
 import { userRefsManager } from "@/user/UserRefsManager";
 import { GameEventPayloads } from "@/game/Events";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/context/AuthContext";
+import { globalAuth } from "@/lib/globalAuth";
 import { set } from "react-hook-form";
 import { use } from "matter";
 import { Button } from "./ui/custom_button";
@@ -64,7 +65,7 @@ export class RoomState extends Schema {
 export const ChannelManager = () => {
     const phaserRef = useRef<IRefPhaserGame>(null);
     const sceneLoaded = useChannelStore((state) => state.sceneLoaded);
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     const isGameLoaded = useChannelStore((state) => state.loaded);
     const { room, isConnected, joinRoom, leaveRoom } = useColyseus();
     const switchChannel = useCallback(async (channel: Channel): Promise<boolean> => {
@@ -92,7 +93,7 @@ export const ChannelManager = () => {
             //game.scene.start(currentSceneKey, { cfg: {name: newMapName} });
             console.log("Scene added and started");
        
-        const currentToken = useAuthStore.getState().accessToken;
+        const currentToken = globalAuth.getAccessToken();
         try {
             await joinRoom("channel", {
                 // mapId: channel.mapName,

@@ -1,136 +1,120 @@
-// // contexts/auth-context.tsx
-// import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-// import { useRouter } from 'next/router';
-// import axios from 'axios';
-// import { UserDto } from '@/dtos/UserDto';
+"use client"
 
-// interface AuthContextType {
-//   user: UserDto;
-//   token: string | null;
-//   isAuthenticated: boolean;
-//   isLoading: boolean;
-//   login: (email: string, password: string) => Promise<void>;
-//   register: (userData: any) => Promise<void>;
-//   logout: () => void;
-//   refreshToken: () => Promise<void>;
-// }
+// contexts/auth-context.tsx
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { UserDto } from '@/dtos/UserDto';
+import { globalAuth } from '@/lib/globalAuth';
 
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthContextType {
+  user: UserDto | null;
+  accessToken: string | null;
+  isAuthLoading: boolean;
+  setAuthLoading: (isLoading: boolean) => void;
+  login: (token: string, user: UserDto) => void;
+  setAccessToken: (token: string) => void;
+  logout: () => void;
+  setUser: (user: UserDto | null) => void;
+}
 
-// export const AuthProvider = ({ children }: { children: ReactNode }) => {
-//   const [user, setUser] = useState<any>(null);
-//   const [token, setToken] = useState<string | null>(null);
-//   const [isLoading, setIsLoading] = useState<boolean>(true);
-//   const router = useRouter();
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-//   // Your external auth server URL
-//   const authServerUrl = process.env.NEXT_PUBLIC_AUTH_SERVER_URL;
-
-//   // Initialize auth state
-//   useEffect(() => {
-//     const initializeAuth = async () => {
-//       try {
-//         const storedToken = localStorage.getItem('token');
-//         if (storedToken) {
-//           // Verify token with server
-//           const { data } = await axios.get(`${authServerUrl}/verify`, {
-//             headers: { Authorization: `Bearer ${storedToken}` }
-//           });
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUserState] = useState<UserDto | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  // Initialize auth state from localStorage
+  useEffect(() => {
+    const initializeAuth = () => {
+      try {
+        const storedToken = localStorage.getItem('accessToken');
+        const storedUser = localStorage.getItem('user');
+        
+        if (storedToken && storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setAccessTokenState(storedToken);
+          setUserState(parsedUser);
           
-//           setUser(data.user);
-//           setToken(storedToken);
-//           axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-//         }
-//       } catch (error) {
-//         console.error('Authentication initialization error:', error);
-//         localStorage.removeItem('token');
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
+          // Initialize global auth with the same state
+          globalAuth.login(storedToken, parsedUser);
+        }
+      } catch (error) {
+        console.error('Error initializing auth from localStorage:', error);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+      } finally {
+        setIsAuthLoading(false);
+        globalAuth.setAuthLoading(false);
+      }
+    };
 
-//     initializeAuth();
-//   }, []);
+    initializeAuth();
+  }, []);
+  const login = (token: string, userData: UserDto) => {
+    setAccessTokenState(token);
+    setUserState(userData);
+    localStorage.setItem('accessToken', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    // Sync with global auth
+    globalAuth.login(token, userData);
+  };
 
-//   // Handle login
-//   const login = async (email: string, password: string) => {
-//     try {
-//       const { data } = await axios.post(`${authServerUrl}/login`, { email, password });
-      
-//       localStorage.setItem('token', data.token);
-//       setToken(data.token);
-//       setUser(data.user);
-//       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      
-//       router.push('/dashboard'); // Redirect after login
-//     } catch (error) {
-//       console.error('Login error:', error);
-//       throw error;
-//     }
-//   };
+  const setAccessToken = (token: string) => {
+    setAccessTokenState(token);
+    localStorage.setItem('accessToken', token);
+    
+    // Sync with global auth
+    globalAuth.setAccessToken(token);
+  };
 
-//   // Handle registration
-//   const register = async (userData: any) => {
-//     try {
-//       const { data } = await axios.post(`${authServerUrl}/register`, userData);
-      
-//       localStorage.setItem('token', data.token);
-//       setToken(data.token);
-//       setUser(data.user);
-//       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      
-//       router.push('/dashboard'); // Redirect after registration
-//     } catch (error) {
-//       console.error('Registration error:', error);
-//       throw error;
-//     }
-//   };
+  const logout = () => {
+    setAccessTokenState(null);
+    setUserState(null);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    
+    // Sync with global auth
+    globalAuth.logout();
+  };
 
-//   // Handle logout
-//   const logout = () => {
-//     localStorage.removeItem('token');
-//     setToken(null);
-//     setUser(null);
-//     delete axios.defaults.headers.common['Authorization'];
-//     router.push('/login');
-//   };
+  const setUser = (userData: UserDto | null) => {
+    setUserState(userData);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      localStorage.removeItem('user');
+    }
+    
+    // Sync with global auth
+    globalAuth.setUser(userData);
+  };
 
-//   // Refresh token
-//   const refreshToken = async () => {
-//     try {
-//       const { data } = await axios.post(`${authServerUrl}/refresh`, {}, {
-//         headers: { Authorization: `Bearer ${token}` }
-//       });
-      
-//       localStorage.setItem('token', data.token);
-//       setToken(data.token);
-//       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-//     } catch (error) {
-//       console.error('Token refresh error:', error);
-//       logout(); // Force logout if refresh fails
-//     }
-//   };
+  const setAuthLoading = (isLoading: boolean) => {
+    setIsAuthLoading(isLoading);
+    
+    // Sync with global auth
+    globalAuth.setAuthLoading(isLoading);
+  };
 
-//   // Value exposed to consumers
-//   const value = {
-//     user,
-//     token,
-//     isAuthenticated: !!token,
-//     isLoading,
-//     login,
-//     register,
-//     logout,
-//     refreshToken
-//   };
+  const value: AuthContextType = {
+    user,
+    accessToken,
+    isAuthLoading,
+    setAuthLoading,
+    login,
+    setAccessToken,
+    logout,
+    setUser,
+  };
 
-//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-// };
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
-// // Custom hook to use the auth context
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (context === undefined) {
-//     throw new Error('useAuth must be used within an AuthProvider');
-//   }
-//   return context;
-// };
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

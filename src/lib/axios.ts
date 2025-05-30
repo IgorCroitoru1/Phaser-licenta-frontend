@@ -1,5 +1,5 @@
 // lib/axios.ts
-import { useAuthStore } from "@/store/useAuthStore"
+import { globalAuth } from "@/lib/globalAuth"
 import axios from "axios"
 import Router from "next/router"
 
@@ -21,7 +21,7 @@ function onRefreshed() {
 }
 
 api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken
+  const token = globalAuth.getAccessToken()
   // console.log("token", token)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -38,18 +38,17 @@ api.interceptors.response.use(
 
       if (!isRefreshing) {
         isRefreshing = true
-        try {
-          const refreshRes = await axios.post(
+        try {          const refreshRes = await axios.post(
             `${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}/auth/refresh`,
             {},
             { withCredentials: true }
           )
           const newToken = refreshRes.data.access_token
-          useAuthStore.getState().setAccessToken(newToken)
+          globalAuth.setAccessToken(newToken)
           isRefreshing = false
           onRefreshed()
         } catch (e) {
-          useAuthStore.getState().logout()
+          globalAuth.logout()
           //Router.push("/login")
           return Promise.reject(e)
         }
@@ -57,7 +56,7 @@ api.interceptors.response.use(
 
       return new Promise((resolve) => {
         subscribeTokenRefresh(() => {
-          originalRequest.headers.Authorization = `Bearer ${useAuthStore.getState().accessToken}`
+          originalRequest.headers.Authorization = `Bearer ${globalAuth.getAccessToken()}`
           resolve(api(originalRequest))
         })
       })

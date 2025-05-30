@@ -1,3 +1,5 @@
+// ⚠️ DEPRECATED: This file is deprecated. Use AuthContext from @/context/AuthContext instead.
+// This file will be removed in a future version.
 // lib/store/auth.ts
 import { UserDto } from '@/dtos/UserDto'
 import { User } from 'next-auth'

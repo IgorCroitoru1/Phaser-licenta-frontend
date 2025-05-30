@@ -1,6 +1,7 @@
 // In your _app.tsx or layout.tsx
 import AuthInitializer from "@/components/AuthInitializaer";
 import AuthLoadingGate from "@/components/AuthLoadingGate";
+import { AuthProvider } from "@/context/AuthContext";
 import { WebSocketProvider } from "@/context/WebSocketContext";
 import styles from "@/styles/Home.module.css";
 import "@/styles/globals.css";
@@ -17,13 +18,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="en">
           <body className={`${styles.main} application-body` }>
             {/* <main className={styles.main}> */}
-                <AuthInitializer>
-                <AuthLoadingGate>
-                  <WebSocketProvider>
-                  {children}
-                  </WebSocketProvider>
-                </AuthLoadingGate>
-                </AuthInitializer>
+                <AuthProvider>
+                  <AuthInitializer>
+                    <AuthLoadingGate>
+                      <WebSocketProvider>
+                        {children}
+                      </WebSocketProvider>
+                    </AuthLoadingGate>
+                  </AuthInitializer>
+                </AuthProvider>
             {/* </main> */}
           </body>
         </html>

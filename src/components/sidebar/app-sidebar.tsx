@@ -22,7 +22,7 @@ import { ChannelUser } from "@/user/ChannelUser";
 import { useNearbyUsers } from "@/hooks/useNearbyUsers";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ChevronsUpDown } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/context/AuthContext";
 import { ChannelCreationDialog } from "../channel-creation-dialog";
 import { getAllChannels } from "@/services/channelService";
 import ChannelsList, { ChannelsListRef } from "../ChannelsList";
@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 export function AppSidebar() {
     const [isChannelDialogOpen, setIsChannelDialogOpen] = React.useState(false);
     const channelsListRef = React.useRef<ChannelsListRef>(null);
-    const user = useAuthStore((state) => state.user);
+    const { user } = useAuth();
     
     // Check if user has admin role
     const isAdmin = user?.roles?.includes('admin') || false;
@@ -95,10 +95,9 @@ export function AppSidebar() {
                         <ChannelsList ref={channelsListRef} />
                     </SidebarCollapsibleGroup>
                     <NearbyUses />
-                    <OnlineUsers />
-                </SidebarContent>
+                    <OnlineUsers />                </SidebarContent>
                 <SidebarFooter>
-                          <CurrentUser user={user} />
+                          {user && <CurrentUser user={user} />}
                 </SidebarFooter>
             </Sidebar>
               {/* Channel Creation Dialog */}

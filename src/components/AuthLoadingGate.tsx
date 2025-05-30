@@ -1,11 +1,11 @@
 // components/AuthLoadingGate.tsx
 "use client"
 
-import { useAuthStore } from "@/store/useAuthStore"
+import { useAuth } from "@/context/AuthContext"
 
 
 export default function AuthLoadingGate({ children }: { children: React.ReactNode }) {
-  const isAuthLoading = useAuthStore((s) => s.isAuthLoading)
+  const { isAuthLoading } = useAuth()
 
   if (isAuthLoading) {
     return (

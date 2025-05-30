@@ -8,7 +8,7 @@ import { ColyseusEventPayloads } from "@/utils/colyseus-events";
 import { ChannelUser } from "@/user/ChannelUser";
 import { useChannelStore } from "@/store/useChannelStore";
 import { authService } from "@/services/auth";
-import { useAuthStore } from "@/store/useAuthStore";
+import { globalAuth } from "@/lib/globalAuth";
 export type GameRoomOptions = {
     // mapId: string;
     token: string | null
@@ -44,11 +44,10 @@ export function useColyseus() {
             console.log(`🔗 Joining room: ${roomName}...`);
             const newRoom = await clientRef.current.joinOrCreate<RoomState>(roomName, options);
             console.log("✅ Joined room:", newRoom.name, newRoom.roomId);
-            
-            const onPlayerJoined = (user: ColyseusEventPayloads[GameEvents.PLAYER_JOINED]) => {
+              const onPlayerJoined = (user: ColyseusEventPayloads[GameEvents.PLAYER_JOINED]) => {
                 const channelUser = new ChannelUser(user);
                 console.log("User joined:", channelUser);
-                const storedUser = useAuthStore.getState().user;
+                const storedUser = globalAuth.getUser();
                 channelUser.isLocal = storedUser?.id === user.id;
                 addUser(channelUser);
                 toast(`Utilizatorul ${channelUser.name || channelUser.email} s-a alăturat`)

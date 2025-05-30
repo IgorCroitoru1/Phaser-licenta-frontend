@@ -1,11 +1,12 @@
 'use client'
 
-import { authService } from '@/services/auth'
-import { useAuthStore } from '@/store/useAuthStore'
+import { authService, AuthService } from '@/services/auth'
+import { useAuth } from '@/context/AuthContext'
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 export default function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const authContext = useAuth()
   const {
     login,
     logout,
@@ -14,13 +15,18 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
     isAuthLoading,
     user,
     setUser,
-  } = useAuthStore()
+  } = authContext
 
   const [canRender, setCanRender] = useState(false)
 
   const router = useRouter()
   const publicRoutes = ['/login', '/register']
   const pathname = usePathname()
+
+  useEffect(() => {
+    // Set the auth context in the service so it can update the context
+    AuthService.setAuthContext(authContext)
+  }, [authContext])
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -55,7 +61,7 @@ export default function AuthInitializer({ children }: { children: React.ReactNod
     }
 
     initializeAuth()
-  }, [accessToken, user, login, logout, setUser, router, pathname])
+  }, [accessToken, user, login, logout, setUser, router, pathname, setAuthLoading])
 
   // 💡 Prevent any child rendering until decision is made
   if (!canRender) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { useWebSocketContext } from '../context/WebSocketContext';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/context/AuthContext';
 import { SidebarChannel } from './sidebar/sidebar-channel';
 import { Channel } from '@/store/useChannelStore';
 import { getAllChannels } from '@/services/channelService';
@@ -18,9 +18,7 @@ const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {
     isConnecting,
     channelsData 
   } = useWebSocketContext();
-  
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isAuthLoading = useAuthStore((state) => state.isAuthLoading);
+    const { accessToken, isAuthLoading } = useAuth();
   const isAuthenticated = !!accessToken;
 
   // REST API state for channels

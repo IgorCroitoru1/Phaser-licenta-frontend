@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import {  useDeviceStore } from "@/store/useChannelStore";
 import { permanentRedirect } from "next/navigation";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CameraAccessPage() {
   const {
@@ -30,7 +30,7 @@ export default function CameraAccessPage() {
     permissionsGranted,
     setPermissionsGranted
   } = useDeviceStore();
-  const accessToken = useAuthStore().accessToken;
+  const { accessToken } = useAuth();
   // console.log("accessToken", accessToken);
 //   const { setStream } = useMediaStream();
   const [error, setError] = useState<string | null>(null);

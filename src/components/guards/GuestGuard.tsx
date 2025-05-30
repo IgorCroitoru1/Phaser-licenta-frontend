@@ -2,10 +2,10 @@
 
 import { useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useAuthStore } from "@/store/useAuthStore"
+import { useAuth } from "@/context/AuthContext"
 
 export default function GuestGuard({ children }: { children: React.ReactNode }) {
-  const { accessToken, isAuthLoading } = useAuthStore()
+  const { accessToken, isAuthLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
