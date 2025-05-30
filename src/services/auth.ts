@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { Credentials, SignInData, SignUpData } from '@/types/auth'
 import axios, { AxiosInstance } from 'axios'
 import { set } from 'react-hook-form'
+import { webSocketService } from './websocket'
 
 export class AuthService {
   private instance: AxiosInstance
@@ -44,7 +45,11 @@ export class AuthService {
   public async logout() {
     return this.instance
       .post<void>('auth/logout')
-      .then(() => useAuthStore.getState().logout())
+      .then(() => {
+        webSocketService.forceDisconnect();
+        useAuthStore.getState().logout()
+
+      })
       .catch((error) => Promise.reject(error))
   }
 

@@ -30,12 +30,15 @@ export function useColyseus() {
         }
     }, []);
 
-    const joinRoom = async (roomName: string, options: GameRoomOptions, retryCount = 0) => {
+    const joinRoom = useCallback(async (roomName: string, options: GameRoomOptions, retryCount = 0) => {
         console.log("Joining room:", roomName);
         if (!clientRef.current) return;
-        if (room) {
-            await leaveRoom();
-            };
+        if (room && room.connection.isOpen && !isConnecting) {
+            console.log("👋 Leaving current room:", room.name);
+            await room.leave();
+            setIsConnected(false);
+            setRoom(null);
+        }
     
         setIsConnecting(true);
         setJoinError(false);
@@ -104,10 +107,10 @@ export function useColyseus() {
         } finally {
             setIsConnecting(false);
         }
-    }
+    }, [room, isConnecting, addUser]);
 
     // ✅ Leave Room
-    const leaveRoom = async () => {
+    const leaveRoom = useCallback(async () => {
         if (room && room.connection.isOpen && !isConnecting) {
             console.log("👋 Leaving room:", room.name);
             await room.leave();
@@ -116,10 +119,9 @@ export function useColyseus() {
             setRoom(null);
             console.log("Room is null");
         }
-    }
+    }, [room, isConnecting]);
 
     useEffect(() => {
-        console.log("joinRoom recrated")
         return () => {
             if (room?.connection.isOpen) {
                 room.leave();

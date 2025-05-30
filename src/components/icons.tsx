@@ -23,6 +23,7 @@ import {
     SunMedium,
     Trash,
     Twitter,
+    Upload,
     User,
     X,
     
@@ -30,8 +31,7 @@ import {
   } from "lucide-react"
   
   export type Icon = typeof LucideIcon
-  
-  export const Icons = {
+    export const Icons = {
     mic: Mic,
     micOff: MicOff,
     logo: Command,
@@ -40,6 +40,7 @@ import {
     chevronLeft: ChevronLeft,
     chevronRight: ChevronRight,
     trash: Trash,
+    upload: Upload,
     post: FileText,
     page: File,
     media: Image,

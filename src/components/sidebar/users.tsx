@@ -7,7 +7,10 @@ import { useChannelStore } from "@/store/useChannelStore";
 import { UserDto } from "@/dtos/UserDto";
 import { ChevronsUpDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { UserAccountDialog } from "@/components/user-account-dialog";
+import { useState } from "react";
 import { authService } from "@/services/auth";
+// import { authManager } from "@/services/authManager";
 
 export interface NearbyUserProps {
     user: ChannelUser;
@@ -63,7 +66,10 @@ export const OnlineUsers = () => {
 }
 
 export const CurrentUser = ({user}: CurrentUserProps) => {
+    const [showAccountDialog, setShowAccountDialog] = useState(false);
+    
     return (
+        <>
                   <SidebarMenu>
             <SidebarMenuItem>
               <DropdownMenu>
@@ -85,16 +91,20 @@ export const CurrentUser = ({user}: CurrentUserProps) => {
                 <DropdownMenuContent
                   side="top"
                   className="w-[--radix-popper-anchor-width]"
-                >
-                  <DropdownMenuItem>
+                >                  <DropdownMenuItem onClick={() => setShowAccountDialog(true)}>
                     <span>Cont</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={()=> authService.logout()}>
                     <span>Sign out</span>
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </DropdownMenuContent>              </DropdownMenu>
             </SidebarMenuItem>
           </SidebarMenu>
+          
+          <UserAccountDialog 
+            open={showAccountDialog} 
+            onOpenChange={setShowAccountDialog} 
+          />
+        </>
     )
 }
