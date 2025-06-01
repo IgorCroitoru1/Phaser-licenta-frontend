@@ -2,14 +2,19 @@ import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandl
 import { useWebSocketContext } from '../context/WebSocketContext';
 import { useAuthStore } from '@/store/useAuthStore';
 import { SidebarChannel } from './sidebar/sidebar-channel';
-import { Channel } from '@/store/useChannelStore';
+import { Channel, useChannelStore } from '@/store/useChannelStore';
 import { getAllChannels } from '@/services/channelService';
 
 export interface ChannelsListRef {
   refreshChannels: () => Promise<void>;
 }
 
-const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {  const { 
+interface ChannelsListProps {
+  onChannelUpdateRequest?: (channel: Channel) => void;
+}
+
+const ChannelsList = forwardRef<ChannelsListRef, ChannelsListProps>(({ onChannelUpdateRequest }, ref) => {
+  const { 
     userCounts, 
     isConnected,
     isConnecting,
@@ -18,6 +23,7 @@ const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {  const {
   
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthLoading = useAuthStore((state) => state.isAuthLoading);
+  const setRefreshChannelsList = useChannelStore((state) => state.setRefreshChannelsList);
   const isAuthenticated = !!accessToken;
 
   // REST API state for channels
@@ -44,11 +50,15 @@ const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {  const {
       setIsLoading(false);
     }
   }, []);
-
   // Expose refresh function to parent components
   useImperativeHandle(ref, () => ({
     refreshChannels: fetchChannels
   }), [fetchChannels]);
+
+  // Set refresh function in store for other components to use
+  useEffect(() => {
+    setRefreshChannelsList(fetchChannels);
+  }, [fetchChannels, setRefreshChannelsList]);
 
   // Load channels on component mount
   useEffect(() => {
@@ -96,14 +106,14 @@ const ChannelsList = forwardRef<ChannelsListRef>((props, ref) => {  const {
         No channels available
       </div>
     );
-  }
-  return (
+  }  return (
     <>
       {channels.map((channel) => (
         <SidebarChannel 
           key={channel.id} 
           channel={channel}
           userCount={channelsData.find(c=> c.channelId === channel.id)?.clientsCount || 0} // Pass user count from WebSocket
+          onChannelUpdateRequest={onChannelUpdateRequest}
         />
       ))}
     </>

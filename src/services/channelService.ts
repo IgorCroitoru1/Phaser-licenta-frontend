@@ -1,19 +1,12 @@
 import api from '@/lib/axios';
 import { Channel } from '@/store/useChannelStore';
 
-export interface CreateChannelRequest {
+export interface CreateChannelDto {
   name: string;
   maxUsers: number;
   mapName: string;
-  sceneName?: string;
 }
 
-export interface UpdateChannelRequest {
-  name?: string;
-  maxUsers?: number;
-  mapName?: string;
-  sceneName?: string;
-}
 
 
 
@@ -57,7 +50,7 @@ export class ChannelService {
   /**
    * Create a new channel
    */
-  static async createChannel(channelData: CreateChannelRequest): Promise<Channel> {
+  static async createChannel(channelData: CreateChannelDto): Promise<Channel> {
     try {
       const response = await api.post<Channel>('/channels', channelData);
       return response.data;
@@ -70,7 +63,7 @@ export class ChannelService {
   /**
    * Update an existing channel
    */
-  static async updateChannel(id: string, channelData: UpdateChannelRequest): Promise<Channel> {
+  static async updateChannel(id: string, channelData: Partial<CreateChannelDto>): Promise<Channel> {
     try {
       const response = await api.put<Channel>(`/channels/${id}`, channelData);
       return response.data;

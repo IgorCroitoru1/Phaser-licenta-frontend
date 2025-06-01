@@ -67,6 +67,9 @@ type ChannelActions = {
   setActiveChannel: (channel: Channel | null) => void;
   switchChannel: (channel: Channel) => Promise<boolean>;
   setSwitchCannel: (fn: ChannelActions['switchChannel']) => void;
+  updateActiveChannel: (updates: Partial<Channel>) => void;
+  refreshChannelsList: () => Promise<void>;
+  setRefreshChannelsList: (fn: () => Promise<void>) => void;
   clear: () => void;
 
   
@@ -173,9 +176,15 @@ export const useChannelStore = create<ChannelStore>()(
       state.nearbyUsers.delete(userId);
     }),
     clearNearbyUsers: () => set((state) => {
-      state.nearbyUsers.clear();
-    }),
-    setActiveChannel: (channel) => set({ activeChannel: channel }),
+      state.nearbyUsers.clear();    }),
+    setActiveChannel: (channel) => set({ activeChannel: channel }),    updateActiveChannel: (updates) =>
+      set((state) => {
+        if (state.activeChannel) {
+          state.activeChannel = { ...state.activeChannel, ...updates };
+        }
+      }),
+    refreshChannelsList: async () => {},
+    setRefreshChannelsList: (fn) => set({ refreshChannelsList: fn }),
     switchChannel: async () => false,
     setZoneState: (zoneId, isOpen) =>
       set((state) => {
