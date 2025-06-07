@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { useWebSocketContext } from '../context/WebSocketContext';
+import { useSocket } from '../context/WebSocketContext';
 import { useAuthStore } from '@/store/useAuthStore';
 import { SidebarChannel } from './sidebar/sidebar-channel';
 import { Channel, useChannelStore } from '@/store/useChannelStore';
@@ -15,11 +15,8 @@ interface ChannelsListProps {
 
 const ChannelsList = forwardRef<ChannelsListRef, ChannelsListProps>(({ onChannelUpdateRequest }, ref) => {
   const { 
-    userCounts, 
-    isConnected,
-    isConnecting,
     channelsData 
-  } = useWebSocketContext();
+  } = useSocket();
   
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthLoading = useAuthStore((state) => state.isAuthLoading);

@@ -3,13 +3,15 @@ import "@/styles/globals.css";
 import { WithProvidersLayout } from '@/layouts/WithProvidersLayout'
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { WebSocketProvider } from "@/context/WebSocketContext";
+import {  SocketProvider} from "@/context/WebSocketContext";
+import { LiveKitProvider } from "@/components/LiveKit";
+import { DeviceSelectionProvider } from "@/context/DeviceSelectionContext";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <WithProvidersLayout>
-        <WebSocketProvider>
-
+     <DeviceSelectionProvider>
+        <SocketProvider>
+          <LiveKitProvider>
       <div className="flex h-screen">
         {/* <div className="w-60 bg-gray-800 text-white"> */}
         <SidebarProvider>              
@@ -23,7 +25,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         {/* </div> */}
        
       </div>
-        </WebSocketProvider>
-    </WithProvidersLayout>
+          </LiveKitProvider>
+
+        </SocketProvider>
+     </DeviceSelectionProvider>
   )
 }
