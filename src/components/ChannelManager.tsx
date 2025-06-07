@@ -18,6 +18,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { set } from "react-hook-form";
 import { use } from "matter";
 import { Button } from "./ui/custom_button";
+import { useRoomManager } from "@/hooks/useRoomManager";
 // constsceneRegistry = new Map<string, typeof Phaser.Scene>();
 // sceneRegistry.set("TestScene", TestScene);
 // sceneRegistry.set("MainMenu", MainMenu);
@@ -67,6 +68,7 @@ export const ChannelManager = () => {
     const user = useAuthStore((state) => state.user);
     const isGameLoaded = useChannelStore((state) => state.loaded);
     const { room, isConnected, joinRoom, leaveRoom } = useColyseus();
+    const {joinChannel} = useRoomManager();
     const switchChannel = useCallback(async (channel: Channel): Promise<boolean> => {
         console.log("Switching channel");
         useChannelStore.getState().clear();
@@ -94,12 +96,18 @@ export const ChannelManager = () => {
        
         const currentToken = useAuthStore.getState().accessToken;
         try {
-            await joinRoom("channel", {
+            const response = await joinChannel(channel.id)
+            if(response.success && channel.id === response.channelId) {
+                //joining game room
+                await joinRoom("channel", {
                 // mapId: channel.mapName,
                 token: currentToken,
                 channelId: channel.id,
             });
             useChannelStore.getState().setActiveChannel(channel)
+
+            }
+           
         } catch (error) {
             console.error("Failed to join room:", error);
             return false;
@@ -123,7 +131,7 @@ export const ChannelManager = () => {
                 unsubscribe();
             };
         });
-    }, [phaserRef, isGameLoaded, room, joinRoom, leaveRoom]);
+    }, [phaserRef, isGameLoaded, room, joinRoom, leaveRoom,joinChannel]);
     
 
     useEffect(() => {
