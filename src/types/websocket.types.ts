@@ -78,14 +78,19 @@ export interface ClientToServerEvents {
   "custom-event": (data: { type: string; data: string; timestamp: string }) => void;
   "quick-message": (data: { message: string; timestamp: string }) => void;
   leaveRoom: (userID: string) => void;
-  "chat-message": (data: { message: string; user: string; room: string }) => void;
+  "chat-message": (data: { message: string; user: string; room: string })  => void;
+  [SOCKET_EVENTS.CHANNEL_MESSAGE]: (data: { channelId: string; message: string; }) => void;
 }
 
 
-
+export type WithOptionalAck<T> = {
+  [K in keyof T]: T[K] extends (...args: infer P) => void 
+    ? (...args: [...P, ack?: (response: any) => void]) => void 
+    : T[K];
+};
 
 // Type alias for the properly typed socket client
-export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+export type TypedSocket = Socket<ServerToClientEvents, WithOptionalAck<ClientToServerEvents> >;
 
 
 export type SocketEventType = typeof SOCKET_EVENTS[keyof typeof SOCKET_EVENTS];

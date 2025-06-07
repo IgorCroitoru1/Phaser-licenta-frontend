@@ -42,7 +42,7 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { ChannelLiveData, ClientToServerEvents, ServerToClientEvents, SOCKET_EVENTS, TypedSocket } from '@/types/websocket.types';
+import { ChannelLiveData, ClientToServerEvents, ServerToClientEvents, SOCKET_EVENTS, TypedSocket, WithOptionalAck } from '@/types/websocket.types';
 import { useAuthStore } from '@/store/useAuthStore';
 
 interface SocketContextType {
@@ -55,7 +55,7 @@ interface SocketContextType {
   maxReconnectAttempts: number;
   emit: <T extends keyof ClientToServerEvents>(
     eventName: T, 
-    ...data: Parameters<ClientToServerEvents[T]>
+    ...args: Parameters<WithOptionalAck<ClientToServerEvents>[T]>
   ) => void;
   on: <T extends keyof ServerToClientEvents>(
     eventName: T,
@@ -203,7 +203,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       // Attempt reconnection on connection error
       attemptReconnect();
     });
-
+    socket.emit("channel-message", {message: "Hello from client", channelId: "123"}, (ack:any)=> {
+      console.log("Message sent successfully, server ack:", ack);
+    });
     // Server event listeners
     socket.on(SOCKET_EVENTS.CHANNELS_INITIAL, (data) => {
       console.log('📊 Received initial channels data:', data);
@@ -238,13 +240,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   const emit: SocketContextType['emit'] = (eventName, ...data) => {
     if (socketRef.current?.connected) {
       console.log(`📤 Sending event: ${String(eventName)}`, data);
-      socketRef.current.emit(eventName, ...data);
+      (socketRef.current.emit as any)(eventName, ...data);
     } else {
       console.error('❌ Cannot emit - socket not connected');
       setConnectionError('Socket not connected');
     }
   };
-
   const on: SocketContextType['on'] = (eventName, callback) => {
     if (socketRef.current) {
       socketRef.current.on(eventName, callback as any);
