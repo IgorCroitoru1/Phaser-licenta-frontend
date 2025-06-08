@@ -5,14 +5,17 @@ import { useSocket } from "@/context/WebSocketContext";
 import {
     ChannelJoinResponse,
     ChannelUserJoinResponse,
+    ChannelUserLeftResponse,
     LiveKitTokenResponse,
+    SOCKET_EVENTS,
 } from "@/types/websocket.types";
+import { ChannelUserDto } from "@/dtos/ChannelUserDto";
 
 export interface UseRoomManagerOptions {
     autoRequestToken?: boolean; // Automatically request LiveKit token after joining
     onChannelJoined?: (response: ChannelJoinResponse) => void;
-    onUserJoined?:(response: ChannelUserJoinResponse) => void;
-    onUserLeft?: (response: ChannelUserJoinResponse) => void;
+    onUserJoined?: (response: ChannelUserJoinResponse) => void;
+    onUserLeft?: (response: ChannelUserLeftResponse) => void;
     onChannelLeft?: (channelId: string) => void;
     onTokenReceived?: (response: LiveKitTokenResponse) => void;
     onError?: (error: string) => void;
@@ -21,7 +24,7 @@ export interface UseRoomManagerOptions {
 export interface UseRoomManagerReturn {
     // State
     currentChannel: string | null;
-    channelToken: { token: string; channelId: string;} | null;
+    channelToken: { token: string; channelId: string } | null;
     isConnected: boolean;
     loading: boolean;
     error: string | null;
@@ -36,13 +39,9 @@ export interface UseRoomManagerReturn {
     ) => Promise<ChannelJoinResponse>;
     leaveChannel: (channelId?: string) => Promise<void>;
     leaveCurrentChannel: () => Promise<void>;
-    switchChannel: (
-        channelId?: string,
-    ) => Promise<ChannelJoinResponse>;
-    requestToken: (
-        channelId: string,
-    ) => Promise<LiveKitTokenResponse>;
-    getChannelToken: () => { token: string; channelId: string; } | null;
+    switchChannel: (channelId?: string) => Promise<ChannelJoinResponse>;
+    requestToken: (channelId: string) => Promise<LiveKitTokenResponse>;
+    getChannelToken: () => { token: string; channelId: string } | null;
     getCurrentChannelToken: () => {
         token: string;
         channelId: string;
@@ -51,9 +50,7 @@ export interface UseRoomManagerReturn {
     hasToken: () => boolean;
     clearError: () => void;
     // Bulk actions
-    joinChannelWithToken: (
-        channelId: string,
-    ) => Promise<{
+    joinChannelWithToken: (channelId: string) => Promise<{
         channelResponse: ChannelJoinResponse;
         tokenResponse: LiveKitTokenResponse;
     }>;
@@ -69,9 +66,9 @@ export const useRoomManager = (
         onTokenReceived,
         onError,
         onUserJoined,
-        onUserLeft
+        onUserLeft,
     } = options;
-    
+
     const {
         isConnected,
         currentChannel,
@@ -80,11 +77,47 @@ export const useRoomManager = (
         leaveChannel: socketLeaveChannel,
         requestLivekitToken,
         getChannelToken,
-        on
+        on,
+        off,
     } = useSocket();
-
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null); // Event binding with cleanup
+    useEffect(() => {
+        if (!isConnected || !on || !off) return;
+
+        // Define event handlers
+        const handleUserJoined = (data: ChannelUserJoinResponse) => {
+            console.log("👋 User joined channel:", data);
+            // Convert ChannelUserDto to ChannelUserJoinResponse format for callback
+
+            onUserJoined?.(data);
+        };
+
+        const handleUserLeft = (data: ChannelUserLeftResponse) => {
+            console.log("👋 User left channel:", data);
+
+            onUserLeft?.(data);
+        };
+
+      
+        // Bind events using SOCKET_EVENTS constants
+        on(SOCKET_EVENTS.USER_JOINED, handleUserJoined);
+        on(SOCKET_EVENTS.USER_LEFT, handleUserLeft);
+
+        // Cleanup function
+        return () => {
+            off(SOCKET_EVENTS.USER_JOINED, handleUserJoined);
+            off(SOCKET_EVENTS.USER_LEFT, handleUserLeft);
+        };
+    }, [isConnected, on, off, onUserJoined, onUserLeft, currentChannel]);
+
+    // Additional cleanup on channel leave or connection close
+    useEffect(() => {
+        if (!currentChannel || !isConnected) {
+            // Clear any channel-specific state when leaving a channel or disconnecting
+            setError(null);
+        }
+    }, [currentChannel, isConnected]);
 
     const clearError = useCallback(() => {
         setError(null);
@@ -93,7 +126,9 @@ export const useRoomManager = (
     const handleError = useCallback(
         (err: unknown) => {
             const errorMessage =
-                err instanceof Error ? err.message : "An unknown error occurred";
+                err instanceof Error
+                    ? err.message
+                    : "An unknown error occurred";
             setError(errorMessage);
             onError?.(errorMessage);
         },
@@ -102,10 +137,7 @@ export const useRoomManager = (
 
     // Channel management functions
     const joinChannel = useCallback(
-        async (
-            channelId?: string,
-            metadata?: any
-        ): Promise<ChannelJoinResponse> => {
+        async (channelId?: string): Promise<ChannelJoinResponse> => {
             if (!channelId) {
                 throw new Error("Channel ID is required");
             }
@@ -165,16 +197,12 @@ export const useRoomManager = (
     );
 
     const requestToken = useCallback(
-        async (
-            channelId: string,
-        ): Promise<LiveKitTokenResponse> => {
+        async (channelId: string): Promise<LiveKitTokenResponse> => {
             setLoading(true);
             setError(null);
 
             try {
-                const response = await requestLivekitToken(
-                    channelId,
-                );
+                const response = await requestLivekitToken(channelId);
                 onTokenReceived?.(response);
                 return response;
             } catch (err) {
@@ -226,7 +254,7 @@ export const useRoomManager = (
 
             // Leave current channel first, then join new one
             // The WebSocket context already handles this automatically
-            return await joinChannel(channelId, metadata);
+            return await joinChannel(channelId);
         },
         [joinChannel]
     );
@@ -245,8 +273,8 @@ export const useRoomManager = (
             setError(null);
 
             try {
-                const channelResponse = await joinChannel(channelId, metadata);
-                
+                const channelResponse = await joinChannel(channelId);
+
                 // Request token if not provided in join response
                 let tokenResponse: LiveKitTokenResponse;
                 if (channelResponse.livekitToken) {
@@ -268,6 +296,15 @@ export const useRoomManager = (
         },
         [joinChannel, requestToken, handleError]
     );
+
+    // Cleanup on connection close or component unmount
+    useEffect(() => {
+        return () => {
+            // Clear any pending state when hook is unmounted
+            setLoading(false);
+            setError(null);
+        };
+    }, []);
 
     return {
         // State

@@ -26,7 +26,7 @@ export class ChannelUserLeftResponse {
   channelId: string;
 }
 export class ChannelUserJoinResponse {
-  userId: string;
+  user: ChannelUserDto;
 
   channelId: string;
 }
@@ -110,9 +110,9 @@ export interface ServerToClientEvents {
   // withAck: (d: string, callback: (e: number) => void) => void;
   message: (data: { type: string; message: string; timestamp: string }) => void;
   "hello-response": (data: { message: string; timestamp: string; serverTime: number }) => void;
-  [SOCKET_EVENTS.USER_LEFT]: (userID: string) => void;
+  [SOCKET_EVENTS.USER_LEFT]: (data:ChannelUserLeftResponse) => void;
   "room-update": (data: { room: string; users: string[] }) => void;
-  [SOCKET_EVENTS.USER_JOINED]: (data: ChannelUserDto) => void;
+  [SOCKET_EVENTS.USER_JOINED]: (data: ChannelUserJoinResponse) => void;
   // ✅ Use computed property names with brackets
   [SOCKET_EVENTS.CHANNELS_INITIAL]: (data: ChannelLiveData[]) => void;
   [SOCKET_EVENTS.CHANNELS_UPDATE]: (data: ChannelLiveData[]) => void;

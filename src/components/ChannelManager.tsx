@@ -67,8 +67,50 @@ export const ChannelManager = () => {
     const sceneLoaded = useChannelStore((state) => state.sceneLoaded);
     const user = useAuthStore((state) => state.user);
     const isGameLoaded = useChannelStore((state) => state.loaded);
+    const addUser = useChannelStore((state) => state.addUser);
+    const removeUser = useChannelStore((state) => state.removeUser);
     const { room, isConnected, joinRoom, leaveRoom } = useColyseus();
-    const {joinChannel} = useRoomManager();
+    const {joinChannel} = useRoomManager({
+        
+        onUserJoined: (data) => {
+            console.log('🎉 User joined event received:', data);
+            toast(`User ${data.user.name} joined the channel!`);
+            addUser(new ChannelUser(data.user));
+            
+        },
+        onUserLeft: (data) => {
+            console.log('👋 User left event received:', data);
+            toast(`User ${data.userId} left the channel!`);
+            removeUser(data.userId);
+        },
+        onChannelJoined: (response) => {
+            console.log('🏠 Successfully joined channel:', response);
+            // if(user){
+            //     const userDto = {
+            //         id: user.id,
+            //         name: user.name,
+            //         email: user.email,
+            //         avatar: user.avatar || "",
+            //         currentZoneId: -1, // Default zone ID
+            //     };
+            //     const channelUser = new ChannelUser(userDto);
+            //     channelUser.isLocal = true; // Mark as local user
+            //     addUser(channelUser);
+            // }
+            response.users.forEach((user) => {
+                const channelUser = new ChannelUser(user);
+                channelUser.isLocal = user.id === user?.id;
+                addUser(channelUser);
+            })
+        },
+        onChannelLeft: (channelId) => {
+            console.log('🚪 Left channel:', channelId);
+        },
+        onError: (error) => {
+            console.error('❌ Room manager error:', error);
+            toast.error(`Channel error: ${error}`);
+        }
+    });
     const switchChannel = useCallback(async (channel: Channel): Promise<boolean> => {
         console.log("Switching channel");
         useChannelStore.getState().clear();
