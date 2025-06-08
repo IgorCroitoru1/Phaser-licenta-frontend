@@ -30,7 +30,7 @@ const ChannelsList = forwardRef<ChannelsListRef, ChannelsListProps>(({ onChannel
   // Connect to WebSocket for user counts when authenticated
   // Note: WebSocket connection is now handled automatically by useWebSocket hook
   // based on auth store token changes
-
+  console.log("New channel data received:", channelsData);
   // Fetch channels from REST API
   const fetchChannels = useCallback(async () => {
     try {

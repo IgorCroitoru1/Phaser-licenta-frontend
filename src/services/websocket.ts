@@ -1,11 +1,11 @@
 // services/websocket.service.ts
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_EVENTS, ChannelLiveData, ChannelUpdate, UserCounts } from '../types/websocket.types';
+import { SOCKET_EVENTS, ChannelLiveData, UserCounts } from '../types/websocket.types';
 
 interface WebSocketCallbacks {
   onInitialData?: (data: ChannelLiveData[]) => void;
   onChannelsUpdate?: (data: ChannelLiveData[]) => void;
-  onChannelUpdate?: (data: ChannelUpdate) => void;
+  onChannelUpdate?: (data: ChannelLiveData) => void;
   onUserCountsUpdate?: (data: UserCounts) => void;
   onConnect?: () => void;
   onDisconnect?: (reason: string) => void;
@@ -73,21 +73,17 @@ export class WebSocketService {
           reject(error);
         });
 
-        // Channel data events
-        this.socket.on(SOCKET_EVENTS.CHANNELS_INITIAL, (data: ChannelLiveData[]) => {
-          console.log('📊 Received initial channel data:', data);
-          this.callbacks.onInitialData?.(data);
-        });
+       
 
         this.socket.on(SOCKET_EVENTS.CHANNELS_UPDATE, (data: ChannelLiveData[]) => {
           console.log('🔄 Received channels update:', data);
           this.callbacks.onChannelsUpdate?.(data);
         });
 
-        this.socket.on(SOCKET_EVENTS.CHANNEL_UPDATE, (data: ChannelUpdate) => {
-          console.log(`🎯 Received channel update for ${data.channelId}:`, data);
-          this.callbacks.onChannelUpdate?.(data);
-        });
+        // this.socket.on(SOCKET_EVENTS.CHANNEL_UPDATE, (data: ChannelUpdate) => {
+        //   console.log(`🎯 Received channel update for ${data.channelId}:`, data);
+        //   this.callbacks.onChannelUpdate?.(data);
+        // });
 
         this.socket.on(SOCKET_EVENTS.CHANNELS_USER_COUNTS, (data: UserCounts) => {
           console.log('👥 Received user counts update:', data);

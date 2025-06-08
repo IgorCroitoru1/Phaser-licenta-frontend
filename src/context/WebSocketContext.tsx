@@ -105,7 +105,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   const socketRef = useRef<TypedSocket | null>(null);  const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [channelsData, setChannelsData] = useState<ChannelLiveData[]>([]);  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const [channelsData, setChannelsData] = useState<ChannelLiveData[]>([]);  
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [currentChannel, setCurrentChannel] = useState<string | null>(null);
   const [channelToken, setChannelToken] = useState<{ token: string; channelId: string } | null>(null);
   const maxReconnectAttempts = options.reconnectionAttempts || 5;
@@ -216,26 +217,30 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     socket.emit("channel-message", {message: "Hello from client", channelId: "123"}, (ack:any)=> {
       console.log("Message sent successfully, server ack:", ack);
     });    // Server event listeners
-    socket.on(SOCKET_EVENTS.CHANNELS_INITIAL, (data) => {
-      console.log('📊 Received initial channels data:', data);
-      setChannelsData(data);
-    });
+
 
     socket.on(SOCKET_EVENTS.CHANNELS_UPDATE, (data) => {
       console.log('🔄 Received channels update:', data);
       setChannelsData(data);
-    });
-
-    socket.on(SOCKET_EVENTS.CHANNEL_UPDATE, (update) => {
+    });    socket.on(SOCKET_EVENTS.CHANNEL_UPDATE, (update) => {
       console.log('🎯 Received channel update:', update);
-      setChannelsData(prev => 
-        prev.map(channel => 
+      setChannelsData(prev => {
+        // Check if channel exists in current state
+        const channelExists = prev.some(channel => channel.channelId === update.channelId);
+        
+        if (!channelExists) {
+          // Add new channel if it doesn't exist
+          return [...prev, update];
+        }
+        
+        // Update existing channel
+        return prev.map(channel => 
           channel.channelId === update.channelId 
-            ? { ...channel, ...update.data }
+            ? { ...channel, ...update }
             : channel
-        )
-      );
-    });    // Channel management event listeners
+        );
+      });
+    });// Channel management event listeners
     socket.on(SOCKET_EVENTS.CHANNEL_JOINED, (data: ChannelJoinResponse) => {
       console.log('🏠 Channel joined successfully:', data);
       if (data.success) {

@@ -74,7 +74,8 @@ export const ChannelManager = () => {
         
         onUserJoined: (data) => {
             console.log('🎉 User joined event received:', data);
-            toast(`User ${data.user.name} joined the channel!`);
+            toast(`Utilizatorul ${data.user.name} s-a econectat!`);
+
             addUser(new ChannelUser(data.user));
             
         },
@@ -288,7 +289,6 @@ export const ChannelManager = () => {
             useChannelStore.getState().removeUser(player.id);
             const user = useChannelStore.getState().users.get(id)
             scene.removePlayer(id);
-            toast(`Utilizatorul ${user?.name} s-a deconectat!`);
 
         });
 

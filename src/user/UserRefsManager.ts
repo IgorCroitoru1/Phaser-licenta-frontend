@@ -4,7 +4,8 @@ export class UserRefsManager {
   private refs = new Map<string, {
     element: HTMLDivElement,
     worldX: number,
-    worldY: number
+    worldY: number,
+    hasReceivedUpdate: boolean
   }>();
 
   private _camera = {
@@ -21,13 +22,13 @@ export class UserRefsManager {
   }
   getRef(id: string) {
     return this.refs.get(id);
-  }
-  // Register a new user element with world coordinates
+  }  // Register a new user element with world coordinates
   register(id: string, element: HTMLDivElement, worldX: number, worldY: number) {
-    this.refs.set(id, { element, worldX, worldY });
+    this.refs.set(id, { element, worldX, worldY, hasReceivedUpdate: false });
+    // Initially hide the element
+    element.style.visibility = 'hidden';
     this.updateElement(id);
   }
-
   // Update user's world position
   updateWorldPosition(id: string, worldX: number, worldY: number) {
     const data = this.refs.get(id);
@@ -35,6 +36,7 @@ export class UserRefsManager {
     
     data.worldX = worldX;
     data.worldY = worldY;
+    data.hasReceivedUpdate = true;
     this.updateElement(id);
   }
 
@@ -56,37 +58,29 @@ export class UserRefsManager {
   unregister(id: string) {
     this.refs.delete(id);
   }
-
   // Private helper to update a single element's transform
   private updateElement(id: string) {
     const data = this.refs.get(id);
     if (!data) return;
 
-    const { element, worldX, worldY } = data;
+    const { element, worldX, worldY, hasReceivedUpdate } = data;
+    
+    // Keep element invisible until it receives its first coordinate update
+    if (!hasReceivedUpdate) {
+      element.style.visibility = 'hidden';
+      return;
+    }
+    
+    // Make element visible once coordinates are received
+    element.style.visibility = 'visible';
+    
     const { worldX: camX, worldY: camY, scrollX, scrollY, zoom } = this._camera;
-
-    // const screenX = (worldX - camX) * zoom;
-    // const screenY = (worldY - camY) * zoom;
 
     const screenX = (worldX - camX) * zoom;
     const screenY = (worldY - camY) * zoom;
     //console.log("RefManager: Player screen coords: ", "playerX: ", worldX, "playerY: ", worldY, "screenX: ", screenX, "screenY: ", screenY);
 
-    // const scaledWidth = GameConfig.playerWidth 
-    // const scaledHeight = GameConfig.playerHeight
-    // const matrix = `matrix(
-    //   ${zoom}, 0, 
-    //   0, ${zoom},
-    //   ${screenX},
-    //   ${screenY}
-    // )`;
-    // `translate(${payload.x}px, ${payload.y}px) scale(${1 / payload.zoom})`
     element.style.transform = `translate(${screenX}px, ${screenY}px) scale(${zoom})`;
-    // element.style.transition= 'transform 50ms linear' 
-    // element.style.transform = matrix;
-   // element.style.transformOrigin = 'top left';
-    // element.style.width = `${scaledWidth}px`;
-    // element.style.height = `${scaledHeight}px`;
   }
 
   // Update all registered elements

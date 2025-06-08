@@ -59,12 +59,12 @@ export function useColyseus() {
             
             setRoom(newRoom);
             setIsConnected(true);
-            newRoom.onMessage(GameEvents.INIT_USERS, (users: ColyseusEventPayloads[GameEvents.INIT_USERS]) => {
-                users.map((user) => {
-                    addUser(new ChannelUser(user));
-                })
-            })
-            newRoom.onMessage(GameEvents.PLAYER_JOINED, onPlayerJoined);
+            // newRoom.onMessage(GameEvents.INIT_USERS, (users: ColyseusEventPayloads[GameEvents.INIT_USERS]) => {
+            //     users.map((user) => {
+            //         addUser(new ChannelUser(user));
+            //     })
+            // })
+            // newRoom.onMessage(GameEvents.PLAYER_JOINED, onPlayerJoined);
             newRoom.onLeave((room, reason) => {
                 console.log("❌ Room Disconnected. Reason:", reason);
                 setIsConnected(false);

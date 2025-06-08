@@ -4,15 +4,12 @@ import { Socket } from "socket.io-client";
 export interface ChannelLiveData {
   channelId: string;
   clientsCount: number;
-  roomsCount: number;
+  // roomsCount: number;
   isActive: boolean;
-  metadata?: any;
+  // metadata?: any;
 }
 
-export interface ChannelUpdate {
-  channelId: string;
-  data: ChannelLiveData;
-}
+
 
 export interface UserCounts {
   [channelId: string]: number;
@@ -61,7 +58,6 @@ export interface LiveKitTokenResponse {
 
 export const SOCKET_EVENTS = {
   // Global channel events
-  CHANNELS_INITIAL: 'channels:initial',
   CHANNELS_UPDATE: 'channels:update', 
   CHANNEL_UPDATE: 'channel:update',
   CHANNELS_USER_COUNTS: 'channels:userCounts',
@@ -114,9 +110,8 @@ export interface ServerToClientEvents {
   "room-update": (data: { room: string; users: string[] }) => void;
   [SOCKET_EVENTS.USER_JOINED]: (data: ChannelUserJoinResponse) => void;
   // ✅ Use computed property names with brackets
-  [SOCKET_EVENTS.CHANNELS_INITIAL]: (data: ChannelLiveData[]) => void;
   [SOCKET_EVENTS.CHANNELS_UPDATE]: (data: ChannelLiveData[]) => void;
-  [SOCKET_EVENTS.CHANNEL_UPDATE]: (data: ChannelUpdate) => void;
+  [SOCKET_EVENTS.CHANNEL_UPDATE]: (data: ChannelLiveData) => void;
   [SOCKET_EVENTS.CHANNELS_USER_COUNTS]: (data: UserCounts) => void;
   
   // Room events from server
