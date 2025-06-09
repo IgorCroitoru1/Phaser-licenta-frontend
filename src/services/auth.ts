@@ -28,12 +28,12 @@ export class AuthService {
       .catch((error) => Promise.reject(error))
   }
 
-//   public async register(signUpData: SignUpData) {
-//     return this.instance
-//       .post<User>('auth/register', signUpData)
-//       .then(({ data: user }) => user)
-//       .catch((error) => Promise.reject(error))
-//   }
+  public async register(signUpData: SignUpData) {
+    return this.instance
+      .post<Credentials & {user :UserDto}>('auth/register-with-code', signUpData)
+      .then(({ data: user }) => user)
+      .catch((error) => Promise.reject(error))
+  }
 
   public async refreshCredentials() {
     return axiosBare
@@ -52,7 +52,12 @@ export class AuthService {
       })
       .catch((error) => Promise.reject(error))
   }
-
+  public async sendCode(email: string) {
+    return this.instance
+      .post<void>('auth/request-verification-code', { email })
+      .then(() => Promise.resolve())
+      .catch((error) => Promise.reject(error))
+  }
   public async getUser() {
     return this.instance
       .get<UserDto>('auth/me')

@@ -24,7 +24,7 @@ export interface UseRoomManagerOptions {
 export interface UseRoomManagerReturn {
     // State
     currentChannel: string | null;
-    channelToken: { token: string; channelId: string } | null;
+    // channelToken: { token: string; channelId: string } | null;
     isConnected: boolean;
     loading: boolean;
     error: string | null;
@@ -309,7 +309,7 @@ export const useRoomManager = (
     return {
         // State
         currentChannel,
-        channelToken,
+        // channelToken,
         isConnected,
         loading,
         error,

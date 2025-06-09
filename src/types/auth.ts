@@ -4,9 +4,10 @@ export type SignInData = {
   }
   
   export type SignUpData = {
-    name: string
+    fullName: string
     email: string
     password: string
+    verificationCode: string
   }
   
   export type Credentials = {
