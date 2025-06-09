@@ -15,7 +15,6 @@ export const UserRenderer = () => {
   const zoneStates = useChannelStore((s) => s.zoneStates)
   const participants = useParticipants()
   const nearbyUsers = useChannelStore((s) => s.nearbyUsers)
-  useParticipants
   const videoTracks = useTracks([{ source: Track.Source.Camera }],
     {
       updateOnlyOn: [
@@ -109,8 +108,8 @@ export const UserRenderer = () => {
       {participants.map((participant) => {
       // Find matching user in your Zustand store
       const user = users.get(participant.identity)
-      if (!user) return null;
-
+      if (!user) { 
+        return null};
       const trackRef = filteredVideoTracks.find(
         (t) => t.participant.identity === participant.identity
       ) || null;

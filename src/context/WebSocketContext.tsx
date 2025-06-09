@@ -55,7 +55,7 @@ interface SocketContextType {
   maxReconnectAttempts: number;
     // Current joined channel state (single channel only)
   currentChannel: string | null;
-  channelToken: { token: string; channelId: string } | null;
+  channelLiveKitToken: { token: string; channelId: string } | null;
   
   // Socket methods
   emit: <T extends keyof ClientToServerEvents>(
@@ -75,8 +75,8 @@ interface SocketContextType {
     // Channel management methods
   joinChannel: (channelId: string, ) => Promise<ChannelJoinResponse>;
   leaveChannel: (channelId?: string) => Promise<void>;
-  requestLivekitToken: (channelId: string) => Promise<LiveKitTokenResponse>;
-  getChannelToken: () => { token: string; channelId: string } | null;
+  requestLiveKitToken: (channelId: string) => Promise<LiveKitTokenResponse>;
+  getChannelLiveKitToken: () => { token: string; channelId: string } | null;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -108,7 +108,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   const [channelsData, setChannelsData] = useState<ChannelLiveData[]>([]);  
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [currentChannel, setCurrentChannel] = useState<string | null>(null);
-  const [channelToken, setChannelToken] = useState<{ token: string; channelId: string } | null>(null);
+  const [channelLiveKitToken, setChannelLiveKitToken] = useState<{ token: string; channelId: string } | null>(null);
   const maxReconnectAttempts = options.reconnectionAttempts || 5;
   const reconnectDelay = options.reconnectionDelay || 3000;
   
@@ -190,7 +190,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       setIsConnecting(false);
       setChannelsData([]);
       setCurrentChannel(null);
-      setChannelToken(null);
+      setChannelLiveKitToken(null);
 
       // Only attempt reconnection for certain disconnect reasons
       if (reason === 'io server disconnect') {
@@ -214,9 +214,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       // Attempt reconnection on connection error
       attemptReconnect();
     });
-    socket.emit("channel-message", {message: "Hello from client", channelId: "123"}, (ack:any)=> {
-      console.log("Message sent successfully, server ack:", ack);
-    });    // Server event listeners
+    // socket.emit("channel-message", {message: "Hello from client", channelId: "123"}, (ack:any)=> {
+    //   console.log("Message sent successfully, server ack:", ack);
+    // });    // Server event listeners
 
 
     socket.on(SOCKET_EVENTS.CHANNELS_UPDATE, (data) => {
@@ -245,9 +245,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       console.log('🏠 Channel joined successfully:', data);
       if (data.success) {
         setCurrentChannel(data.channelId);
-        if (data.livekitToken) {
-          setChannelToken({ 
-            token: data.livekitToken, 
+        if (data.liveKitToken) {
+          setChannelLiveKitToken({ 
+            token: data.liveKitToken, 
             channelId: data.channelId,
           });
         }
@@ -256,7 +256,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       console.log('🚪 Channel left:', data);
       if (data.success) {
         setCurrentChannel(null);
-        setChannelToken(null);
+        setChannelLiveKitToken(null);
       }
     });
 
@@ -266,7 +266,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     });    socket.on(SOCKET_EVENTS.LIVEKIT_TOKEN_RESPONSE, (data: LiveKitTokenResponse) => {
       console.log('🎥 LiveKit token received:', data);
       if (currentChannel === data.channelId) {
-        setChannelToken({ 
+        setChannelLiveKitToken({ 
           token: data.token, 
           channelId: data.channelId,
         });
@@ -320,7 +320,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     setReconnectAttempts(0);
     setChannelsData([]);
     setCurrentChannel(null);
-    setChannelToken(null);
+    setChannelLiveKitToken(null);
     isInitialized.current = false;
   };
   const reconnect = () => {
@@ -344,6 +344,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       }
 
       try {
+        
         // Enforce single-channel policy: leave current channel before joining new one
         if (currentChannel && currentChannel !== channelId) {
           console.log(`🚪 Single-channel policy: Leaving current channel ${currentChannel} before joining ${channelId}`);
@@ -365,6 +366,16 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
         socketRef.current.emit(SOCKET_EVENTS.JOIN_CHANNEL, request, (response: ChannelJoinResponse) => {
           console.log('🏠 Channel join response:', response);
           if (response.success) {
+              setCurrentChannel(response.channelId);
+              console.log('✅ Successfully joined channel',response);
+
+            if(response.liveKitToken) {
+              console.log(`🎥Setting LiveKit token received for channel ${response.channelId}`);
+              setChannelLiveKitToken({
+                token: response.liveKitToken,
+                channelId: response.channelId,
+              })
+            }
             resolve(response);
           } else {
             reject(new Error(response.error || 'Failed to join channel'));
@@ -400,7 +411,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
         if (response?.success !== false) {
           // Remove from local state immediately
           setCurrentChannel(null);
-          setChannelToken(null);
+          setChannelLiveKitToken(null);
           resolve();
         } else {
           reject(new Error(response?.error || 'Failed to leave channel'));
@@ -408,7 +419,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       });
     });
   };
-  const requestLivekitToken = async (channelId: string, identity?: string, metadata?: any): Promise<LiveKitTokenResponse> => {
+  const requestLiveKitToken = async (channelId: string): Promise<LiveKitTokenResponse> => {
     return new Promise((resolve, reject) => {
       if (!socketRef.current?.connected) {
         const error = 'Socket not connected';
@@ -417,13 +428,16 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
         return;
       }
 
-      console.log(`🎥 Requesting LiveKit token for channel: ${channelId}`, { identity, metadata });
       
-      const request = { channelId, identity, metadata };
+      const request = { channelId };
       
       socketRef.current.emit(SOCKET_EVENTS.REQUEST_LIVEKIT_TOKEN, request, (response: LiveKitTokenResponse) => {
         console.log('🎥 LiveKit token response:', response);
         if (response.token) {
+          setChannelLiveKitToken({
+            token: response.token,
+            channelId: response.channelId,
+          })
           resolve(response);
         } else {
           reject(new Error('Failed to get LiveKit token'));
@@ -431,8 +445,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       });
     });
   };  
-  const getChannelToken = (): { token: string; channelId: string } | null => {
-    return channelToken;
+  const getChannelLiveKitToken = (): { token: string; channelId: string } | null => {
+    return channelLiveKitToken;
   };
 
   // Effect to handle token changes
@@ -454,7 +468,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
         setIsConnecting(false);
         setChannelsData([]);
         setCurrentChannel(null);
-        setChannelToken(null);
+        setChannelLiveKitToken(null);
         isInitialized.current = false;
       }
     };
@@ -467,7 +481,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     reconnectAttempts,
     maxReconnectAttempts,
     currentChannel,
-    channelToken,
+    channelLiveKitToken,
     emit,
     on,
     off,
@@ -475,8 +489,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     reconnect,
     joinChannel,
     leaveChannel,
-    requestLivekitToken,
-    getChannelToken,
+    requestLiveKitToken,
+    getChannelLiveKitToken,
   };
 
   return (

@@ -41,19 +41,16 @@ export interface UseRoomManagerReturn {
     leaveCurrentChannel: () => Promise<void>;
     switchChannel: (channelId?: string) => Promise<ChannelJoinResponse>;
     requestToken: (channelId: string) => Promise<LiveKitTokenResponse>;
-    getChannelToken: () => { token: string; channelId: string } | null;
-    getCurrentChannelToken: () => {
-        token: string;
-        channelId: string;
-    } | null;
+    getChannelLiveKitToken: () => { token: string; channelId: string } | null;
+   
     isInChannel: (channelId: string) => boolean;
     hasToken: () => boolean;
     clearError: () => void;
     // Bulk actions
-    joinChannelWithToken: (channelId: string) => Promise<{
-        channelResponse: ChannelJoinResponse;
-        tokenResponse: LiveKitTokenResponse;
-    }>;
+    // joinChannelWithToken: (channelId: string) => Promise<{
+    //     channelResponse: ChannelJoinResponse;
+    //     tokenResponse: LiveKitTokenResponse;
+    // }>;
 }
 
 export const useRoomManager = (
@@ -72,11 +69,11 @@ export const useRoomManager = (
     const {
         isConnected,
         currentChannel,
-        channelToken,
+        channelLiveKitToken,
         joinChannel: socketJoinChannel,
         leaveChannel: socketLeaveChannel,
-        requestLivekitToken,
-        getChannelToken,
+        requestLiveKitToken,
+        getChannelLiveKitToken,
         on,
         off,
     } = useSocket();
@@ -151,10 +148,10 @@ export const useRoomManager = (
                 onChannelJoined?.(response);
 
                 // Auto-request token if enabled and not already provided
-                if (autoRequestToken && !response.livekitToken) {
+                if (autoRequestToken && !response.liveKitToken) {
                     try {
                         const livekitResponse = await requestToken(channelId);
-                        response.livekitToken = livekitResponse.token;
+                        response.liveKitToken = livekitResponse.token;
                     } catch (tokenError) {
                         console.warn(
                             "Failed to auto-request token:",
@@ -202,7 +199,7 @@ export const useRoomManager = (
             setError(null);
 
             try {
-                const response = await requestLivekitToken(channelId);
+                const response = await requestLiveKitToken(channelId);
                 onTokenReceived?.(response);
                 return response;
             } catch (err) {
@@ -212,7 +209,7 @@ export const useRoomManager = (
                 setLoading(false);
             }
         },
-        [requestLivekitToken, onTokenReceived, handleError]
+        [requestLiveKitToken, onTokenReceived, handleError]
     );
 
     // Helper functions
@@ -224,8 +221,8 @@ export const useRoomManager = (
     );
 
     const hasToken = useCallback((): boolean => {
-        return channelToken !== null;
-    }, [channelToken]);
+        return channelLiveKitToken !== null;
+    }, [channelLiveKitToken]);
 
     const isInAnyChannel = !!currentChannel;
 
@@ -236,12 +233,7 @@ export const useRoomManager = (
         await leaveChannel(currentChannel);
     }, [currentChannel, leaveChannel]);
 
-    const getCurrentChannelToken = useCallback((): {
-        token: string;
-        channelId: string;
-    } | null => {
-        return getChannelToken();
-    }, [getChannelToken]);
+   
 
     const switchChannel = useCallback(
         async (
@@ -260,42 +252,42 @@ export const useRoomManager = (
     );
 
     // Bulk action: join channel and request token atomically
-    const joinChannelWithToken = useCallback(
-        async (
-            channelId: string,
-            identity?: string,
-            metadata?: any
-        ): Promise<{
-            channelResponse: ChannelJoinResponse;
-            tokenResponse: LiveKitTokenResponse;
-        }> => {
-            setLoading(true);
-            setError(null);
+    // const joinChannelWithToken = useCallback(
+    //     async (
+    //         channelId: string,
+    //         identity?: string,
+    //         metadata?: any
+    //     ): Promise<{
+    //         channelResponse: ChannelJoinResponse;
+    //         tokenResponse: LiveKitTokenResponse;
+    //     }> => {
+    //         setLoading(true);
+    //         setError(null);
 
-            try {
-                const channelResponse = await joinChannel(channelId);
+    //         try {
+    //             const channelResponse = await joinChannel(channelId);
 
-                // Request token if not provided in join response
-                let tokenResponse: LiveKitTokenResponse;
-                if (channelResponse.livekitToken) {
-                    tokenResponse = {
-                        channelId,
-                        token: channelResponse.livekitToken,
-                    };
-                } else {
-                    tokenResponse = await requestToken(channelId);
-                }
+    //             // Request token if not provided in join response
+    //             let tokenResponse: LiveKitTokenResponse;
+    //             if (channelResponse.livekitToken) {
+    //                 tokenResponse = {
+    //                     channelId,
+    //                     token: channelResponse.livekitToken,
+    //                 };
+    //             } else {
+    //                 tokenResponse = await requestToken(channelId);
+    //             }
 
-                return { channelResponse, tokenResponse };
-            } catch (err) {
-                handleError(err);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [joinChannel, requestToken, handleError]
-    );
+    //             return { channelResponse, tokenResponse };
+    //         } catch (err) {
+    //             handleError(err);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [joinChannel, requestToken, handleError]
+    // );
 
     // Cleanup on connection close or component unmount
     useEffect(() => {
@@ -323,11 +315,10 @@ export const useRoomManager = (
         leaveCurrentChannel,
         switchChannel,
         requestToken,
-        getChannelToken,
-        getCurrentChannelToken,
+        getChannelLiveKitToken,
         isInChannel,
         hasToken,
         clearError,
-        joinChannelWithToken,
+        // joinChannelWithToken,
     };
 };

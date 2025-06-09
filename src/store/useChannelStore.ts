@@ -74,7 +74,7 @@ type ChannelActions = {
 
   
   addUser: (user: ChannelUser) => void;
-  removeUser: (id: string) => void;
+  removeUser: (id: string) => ChannelUserDto | undefined;
   clearUsers: () => void;
   updateUser: (id: string, update: Partial<ChannelUser>) => void;
   getUser: (id: string) => ChannelUser | undefined;
@@ -218,17 +218,20 @@ export const useChannelStore = create<ChannelStore>()(
     addUser: (user) =>
       set((state) => {
         state.users.set(user.id, user);
-      }),
-    
-    removeUser: (id) =>
-      set((state) => {
-        state.users.delete(id);
-      }),
-   getUser: (id) =>
-    get().users.get(id),
+            }),
+          
+      removeUser: (id) => {
+        const deletedUser = get().users.get(id);
+        set((state) => {
+          state.users.delete(id);
+        });
+        return deletedUser;
+      },
+         getUser: (id) =>
+          get().users.get(id),
 
-    clearUsers: () =>
-      set((state) => {
+          clearUsers: () =>
+            set((state) => {
         state.users.clear();
       }),
     

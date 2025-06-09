@@ -18,7 +18,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { set } from "react-hook-form";
 import { use } from "matter";
 import { Button } from "./ui/custom_button";
-import { useRoomManager } from "@/hooks/useRoomManager";
+import { useRoomManager } from "@/hooks/useChannelManager";
 // constsceneRegistry = new Map<string, typeof Phaser.Scene>();
 // sceneRegistry.set("TestScene", TestScene);
 // sceneRegistry.set("MainMenu", MainMenu);
@@ -73,19 +73,17 @@ export const ChannelManager = () => {
     const {joinChannel} = useRoomManager({
         
         onUserJoined: (data) => {
-            console.log('🎉 User joined event received:', data);
-            toast(`Utilizatorul ${data.user.name} s-a econectat!`);
+            toast(`Utilizatorul ${data.user.name} s-a conectat!`);
 
             addUser(new ChannelUser(data.user));
             
         },
         onUserLeft: (data) => {
-            console.log('👋 User left event received:', data);
-            toast(`User ${data.userId} left the channel!`);
-            removeUser(data.userId);
+            const leftUser = removeUser(data.userId);
+            toast(`Utilizatorul ${leftUser?.name} a părăsit canalul!`);
+
         },
         onChannelJoined: (response) => {
-            console.log('🏠 Successfully joined channel:', response);
             // if(user){
             //     const userDto = {
             //         id: user.id,
@@ -105,10 +103,8 @@ export const ChannelManager = () => {
             })
         },
         onChannelLeft: (channelId) => {
-            console.log('🚪 Left channel:', channelId);
         },
         onError: (error) => {
-            console.error('❌ Room manager error:', error);
             toast.error(`Channel error: ${error}`);
         }
     });

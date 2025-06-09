@@ -37,7 +37,7 @@ export interface ChannelJoinResponse {
   success: boolean;
   users: ChannelUserDto[];
   channelId: string;
-  livekitToken?: string;
+  liveKitToken?: string;
   error?: string;
 }
 
