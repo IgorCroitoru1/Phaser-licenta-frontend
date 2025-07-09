@@ -1,7 +1,5 @@
 import * as React from "react";
 import { ChevronsUpDown, Users } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,12 +14,6 @@ import {
 // You might need to adjust the import path and the store structure
 import { useChannelStore } from "@/store/useChannelStore" // Adjust this path to your store
 
-// Define a type for a nearby user, adjust according to your store's structure
-interface NearbyUser {
-  id: string;
-  name: string;
-  avatarUrl: string; // URL for the avatar image
-}
 
 export function NearbyUsersPanel() {
   const [isOpen, setIsOpen] = React.useState(false);
